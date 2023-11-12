@@ -25,7 +25,7 @@ pnpm install svelte-email-tailwind
 
 ## 1. Create an email using Svelte
 
-`src/$lib/emails/Hello.svelte`
+`$lib/emails/Hello.svelte`
 
 ```html
 <script>
@@ -79,7 +79,7 @@ Using a preview route, you can view all your dynamically generated email compone
 Upon selecting an email component, the component is dynamically imported and rendered (including tailwind classes) on the server.
 This means you'll be able to preview your emails with the exact markup that eventually lands an inbox (unless of course, the email provider manipulates it behind the scenes).
 
-![svelte-email-tailwind-preview-interface](https://github.com/steveninety/svelte-email-tailwind/tree/master/static/interface.jpg)
+![svelte-email-tailwind-preview-interface](https://raw.githubusercontent.com/steveninety/svelte-email-tailwind/main/static/interface.jpg)
 
 To get started...
 

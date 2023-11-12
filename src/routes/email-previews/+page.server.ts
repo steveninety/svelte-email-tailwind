@@ -1,8 +1,6 @@
 import type { Actions } from './$types';
-// import { renderSvelte } from 'svelte-email-tailwind/renderSvelte'
-// import { renderTailwind } from 'svelte-email-tailwind/renderTailwind'
-import { renderSvelte } from '$lib'
-import { renderTailwind } from '$lib'
+import { renderSvelte } from 'svelte-email-tailwind/renderSvelte'
+import { renderTailwind } from 'svelte-email-tailwind/renderTailwind'
 import type { TailwindConfig } from 'tw-to-css'
 import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 import { Resend } from 'resend';
