@@ -1,0 +1,13 @@
+diff --git a/lib/html-to-text.mjs b/lib/html-to-text.mjs
+index e42ff852a14302abf38fd52c156f3c265335b4ce..6dbab0e852171f97accee38d5bf70c1059dd93a3 100644
+--- a/lib/html-to-text.mjs
++++ b/lib/html-to-text.mjs
+@@ -2,7 +2,7 @@ import { hp2Builder } from '@selderee/plugin-htmlparser2';
+ import { parseDocument } from 'htmlparser2';
+ import { DecisionTree } from 'selderee';
+ import merge from 'deepmerge';
+-import { render } from 'dom-serializer';
++import render from 'dom-serializer';
+ 
+ /**
+  * Make a recursive function that will only run to a given depth
