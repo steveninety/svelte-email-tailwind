@@ -1,6 +1,6 @@
 import type { Actions } from './$types';
-import { renderSvelte } from 'svelte-email-tailwind/renderSvelte'
-import { renderTailwind } from 'svelte-email-tailwind/renderTailwind'
+import { renderSvelte } from 'svelte-email-tailwind'
+import { renderTailwind } from 'svelte-email-tailwind'
 import type { TailwindConfig } from 'tw-to-css'
 import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 import { Resend } from 'resend';
@@ -70,11 +70,11 @@ export const actions = {
     /**
      * 
      * Sends the email using the received form data. 
-     * Use any mail provider, but make sure to match the return type ({success: boolean})
+     * You can swap out Resend for any other provider.
      * 
      */
 
-    'send-email': async ({ request }) => {
+    'send-email': async ({ request }): Promise<{ success: boolean }> => {
         const data = await request.formData()
 
         const resend = new Resend(PRIVATE_RESEND_API_KEY);

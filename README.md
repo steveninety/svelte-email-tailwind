@@ -75,13 +75,14 @@ resend.emails.send({
 
 # Previewing & Testing Emails in Development (SvelteKit only)
 
-Using a preview route, you can view all your dynamically generated email components.
+Using a designated route, you can preview all your dynamically generated email components.
 Upon selecting an email component, the component is dynamically imported and rendered (including tailwind classes) on the server.
 This means you'll be able to preview your emails with the exact markup that eventually lands an inbox (unless of course, the email provider manipulates it behind the scenes).
 
 ![svelte-email-tailwind-preview-interface](https://raw.githubusercontent.com/steveninety/svelte-email-tailwind/main/static/interface.jpg)
 
 To get started...
+
 
 ## 1. Copy the `email-previews` folder from the [repo](https://github.com/steveninety/svelte-email-tailwind/tree/master/src/routes)
 
@@ -91,22 +92,20 @@ Make sure to include all 3 files:
 - EmailPreviews.svelte
 
 
-## 2. (Optionally) install Tailwind & Resend
-
-The component is styled using Tailwind classes. So if desired, [install Tailwind](https://tailwindcss.com/docs/guides/sveltekit).
-**It is also functional without Tailwind** (though very minimally styled). 
-If the interface's styling looks off (due to styles inheriting from your project's stylesheets), you can pass in the prop `unstyled={true}`. This will apply the style `all: initial`, so it no longer inherits any styles from your project.   
+## 2. (Optionally) install Resend
 
 Test emails are sent using Resend, so [install Resend](https://resend.com/docs/send-with-nodejs) and include the API key in your `.env`.
 
 If desired, you can swap out Resend for another provider such as Nodemailer. 
-To do so, adjust the `'send-email'` form action. Match the return type `{ success: boolean }` to prevent issues on the front-end.
+To do so, adjust the `'send-email'` form action (`+page.server.ts`).
 
-## 3. Start previewing all your emails in the /email-previews route
 
-- Dynamically generated list of all your email components (place your email components in the `/src/lib/emails` folder, or change it in `+page.server.ts` (in the `emailComponents` variable and `create-email` form action).
-- Preview the styled or plain-text version of your email.
-- Send the email to yourself to preview it in a real inbox.
+## 3. Start previewing all your emails in the `/email-previews` route
+
+1. Put your email components in the `/src/lib/emails` directory, or change the directory in `+page.server.ts` (in the `emailComponents` variable and `create-email` form action).
+2. Preview the styled and plain-text versions of all of your emails.
+3. Send the email to yourself to preview it in a real inbox.
+
 
 # Components
 

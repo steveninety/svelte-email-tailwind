@@ -1,15 +1,14 @@
 <script lang="ts">
+	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
-	import type { PageServerData, ActionData } from './$types';
 	import { persisted } from 'svelte-persisted-store';
 	import { get, writable, type Writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
-	export let data: PageServerData;
+	export let data: PageData;
 	export let form: ActionData;
-	export let spacingTop: string = '6rem';
+	export let spacingTop: string = '1rem';
 	export let spacingBottom: string = '1rem';
-	export let unstyled = false;
 	export let email: string = 'name@example.com';
 
 	let w: number;
@@ -35,13 +34,12 @@
 
 	let styledHtml: string | undefined;
 	const plainText: Writable<string | undefined> = writable();
+	const code: Writable<string | undefined> = writable();
 	$: if (form?.htmlRenderedTailwind) styledHtml = form.htmlRenderedTailwind;
 	$: plainText.update((oldValue) => {
-		// console.log('old:', oldValue)
-		// console.log('new:', form?.plainText)
 		if (oldValue?.length && form?.plainText?.length) {
 			if (oldValue !== form.plainText) {
-				return form.plainText.replace(/\n/g, '<br />');
+				return `${form.plainText.replace(/\n/g, '<br />')}`;
 			} else {
 				return oldValue;
 			}
@@ -49,10 +47,23 @@
 			return form?.plainText?.replace(/\n/g, '<br />');
 		}
 	});
+	$: code.update((oldValue) => {
+		if (oldValue?.length && form?.code?.length) {
+			if (oldValue !== form.code) {
+				return form.code;
+			} else {
+				return oldValue;
+			}
+		} else {
+			return form?.code;
+		}
+	});
 	$: if (shownInterface === 'styledHtml') {
 		interfaceSrc = styledHtml;
 	} else if (shownInterface === 'plainText') {
 		interfaceSrc = get(plainText);
+	} else if (shownInterface === 'code') {
+		interfaceSrc = get(code);
 	}
 
 	const icons = {
@@ -67,7 +78,7 @@
 	onMount(() => {
 		if (get(selected) && !data?.emailComponentList?.find((file) => file === get(selected))) {
 			console.warn(`Svelte component '${get(selected)}' doesn't seem to exist (anymore)...`);
-			selected.update(() => null);
+			selected.update((value) => (value = null));
 		}
 		if (get(selected) && formCreateEmail) {
 			formCreateEmail.requestSubmit();
@@ -79,37 +90,23 @@
 	}
 </script>
 
-<div
-	class="{unstyled
-		? 'email-preview-wrapper'
-		: ''} wrapper w-full h-full flex mx-auto bg-[inherit] absolute inset-0 z-[9999]"
-	style="position: absolute; inset: 0; width: 100%; height: 100%;"
->
-	<!-- Fixed background -->
-	<div class="fixed inset-0 -z-10 bg-[inherit] pointer-events-none" />
-	<div
-		class="content w-full h-full flex flex-col gap-20"
-		style="width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; gap: 1rem"
-	>
-		<!-- <div class="w-full flex justify-between items-stretch border-neutral-300"> -->
-		<div
-			class="w-full grid gap-y-0 border-neutral-300"
-			style="display: grid; grid-template-rows: auto; grid-template-columns: repeat(3, minmax(auto,1fr)); padding: {spacingTop} 1rem 0 1rem;"
-		>
-			<!-- Button toggle file list -->
+<div id="u">
+	<div id="content">
+		<div id="navigation" style="padding-top: {spacingTop};">
 			<button
-				style="display:flex; width: fit-content"
-				class="w-fit rounded-full flex items-center gap-10 border-2 border-neutral-300 px-10 py-1 {showComponentList
-					? 'text-neutral-100 bg-neutral-700 border-neutral-700'
-					: 'border-neutral-300 hover:border-neutral-700'}"
+				id="files-toggle"
+				class:show={showComponentList}
+				class="drop-down files-toggle"
 				on:click={() => {
 					if (showSendEmailForm && !showComponentList) showSendEmailForm = false;
 					showComponentList = !showComponentList;
 				}}
 			>
-				<div class="flex" style="display: flex;">
-					<div class="w-20">{@html icons.folder}</div>
-					<div class={showComponentList ? 'rotate-180' : 'rotate-0'}>{@html icons.chevron}</div>
+				<div>
+					{@html icons.folder}
+					<div class:rotate={showComponentList} class="chevron">
+						{@html icons.chevron}
+					</div>
 				</div>
 			</button>
 			{#if showComponentList && !showSendEmailForm}
@@ -127,10 +124,8 @@
 							}
 						};
 					}}
-					class="row-start-2 row-end-2 col-span-3 w-fit h-fit max-h-[25vh] overflow-y-scroll flex flex-col mt-10 p-10 border-2 border-neutral-700 sm:flex-row sm:flex-wrap gap-10 {selectingComponent
-						? 'pointer-events-none cursor-wait'
-						: ''}"
-					style="grid-row-start: 2; grid-row-end: 2; grid-column: 1 / 3;"
+					id="files-form"
+					class:disabled={selectingComponent}
 					bind:this={formCreateEmail}
 				>
 					{#if !data || !data.emailComponentList}
@@ -138,9 +133,8 @@
 					{:else}
 						<fieldset style="width: fit-content">
 							{#each data.emailComponentList as emailComponent}
-								<div class="w-full">
+								<div class="input-wrapper">
 									<input
-										class="absolute opacity-0"
 										name="email-component"
 										type="radio"
 										value={emailComponent}
@@ -149,18 +143,7 @@
 										bind:group={$selected}
 										checked={emailComponent === get(selected)}
 									/>
-									<label
-										for={emailComponent}
-										class:selected={emailComponent === get(selected)}
-										class="flex items-center w-full cursor-pointer whitespace-nowrap py-5 px-10 {emailComponent ===
-										get(selected)
-											? 'bg-neutral-700 text-neutral-100 border-neutral-700'
-											: 'border-neutral-300 hover:bg-neutral-300'}"
-									>
-										<!-- <File
-											class="innline mr-5 relative bottom-1"
-											style="display:inline; margin-right:5px;"
-										/> -->
+									<label for={emailComponent} class:selected={emailComponent === get(selected)}>
 										<div class="inline mr-5 relative bottom-1" style="display: inline;">
 											{@html icons.file}
 										</div>
@@ -172,18 +155,9 @@
 					{/if}
 				</form>
 			{/if}
-			<!-- Buttons interface switch -->
-			<div
-				style="width: fit-content; margin: 0 auto;"
-				class="toggles w-fit mx-auto border-2 {!$selected
-					? 'border-neutral-300 [&>*]:cursor-not-allowed'
-					: 'border-neutral-700'} flex rounded-full"
-			>
-				<div
-					class="w-80 first-of-type:rounded-tl-full first-of-type:rounded-bl-full last-of-type:rounded-tr-full last-of-type:rounded-br-full overflow-hidden"
-				>
+			<div id="interface-switch" class:disabled={!$selected}>
+				<div class:equal-width={!form?.code} class="input-wrapper">
 					<input
-						class="absolute opacity-0"
 						type="radio"
 						name="shown-interface"
 						id="styledHtml"
@@ -196,21 +170,10 @@
 						value="styledHtml"
 						checked={shownInterface === 'styledHtml'}
 					/>
-					<label
-						for="styledHtml"
-						class="block w-full py-1 px-5 text-center cursor-pointer {shownInterface ===
-						'styledHtml'
-							? 'bg-neutral-700 text-neutral-100 '
-							: 'border-trans hover:bg-neutral-300'} {!$selected
-							? 'opacity-50 cursor-not-allowed'
-							: ''} ">Styled</label
-					>
+					<label for="styledHtml" class:active={shownInterface === 'styledHtml'} class:equal-width={!form?.code}>Styled</label>
 				</div>
-				<div
-					class="w-80 first-of-type:rounded-tl-full first-of-type:rounded-bl-full last-of-type:rounded-tr-full last-of-type:rounded-br-full overflow-hidden"
-				>
+				<div class:equal-width={!form?.code} class="input-wrapper">
 					<input
-						class="absolute opacity-0"
 						type="radio"
 						name="shown-interface"
 						id="plainText"
@@ -223,33 +186,43 @@
 						value="plainText"
 						checked={shownInterface === 'plainText'}
 					/>
-					<label
-						for="plainText"
-						class="block w-full py-1 px-5 text-center cursor-pointer {shownInterface === 'plainText'
-							? 'bg-neutral-700 text-neutral-100 '
-							: 'border-trans hover:bg-neutral-300'} {!$selected
-							? 'opacity-50 cursor-not-allowed'
-							: ''} ">Text</label
-					>
+					<label for="plainText" class:active={shownInterface === 'plainText'} class:equal-width={!form?.code}>Text</label>
 				</div>
+				{#if form?.code}
+					<div class="input-wrapper">
+						<input
+							type="radio"
+							name="shown-interface"
+							id="code"
+							disabled={!$selected}
+							bind:group={shownInterface}
+							on:change={(e) => {
+								// @ts-ignore
+								shownInterface = e.currentTarget.id;
+							}}
+							checked={shownInterface === 'code'}
+							value="code"
+						/>
+						<label for="code" class:active={shownInterface === 'code'} class:equal-width={!form?.code}>Code</label>
+					</div>
+				{/if}
 			</div>
-			<!-- Button toggle email form -->
 			<button
 				disabled={!$selected}
-				style="margin-left: auto; margin-right: 0;"
-				class="ml-auto w-fit rounded-full border-2 py-1 px-10 flex {!$selected
-					? 'opacity-50 cursor-not-allowed'
-					: ''} {showSendEmailForm
-					? 'text-neutral-100 bg-neutral-700 border-neutral-700'
-					: 'border-neutral-300 hover:border-neutral-700'}"
+				id="send-toggle"
+				style=""
+				class:show={showSendEmailForm}
+				class="drop-down"
 				on:click={() => {
 					if (showComponentList && !showSendEmailForm) showComponentList = false;
 					showSendEmailForm = !showSendEmailForm;
 				}}
 			>
-				<div class="flex items-center" style="display: flex;">
-					<div class="">{@html icons.mail}</div>
-					<div class={showSendEmailForm ? 'rotate-180' : 'rotate-0'}>{@html icons.chevron}</div>
+				<div>
+					{@html icons.mail}
+					<div class:rotate={showSendEmailForm} class="chevron">
+						{@html icons.chevron}
+					</div>
 				</div>
 			</button>
 			{#if showSendEmailForm && !showComponentList}
@@ -278,40 +251,27 @@
 					}}
 					action="?/send-email"
 					bind:this={formSendEmail}
-					class="row-start-3 row-end-3 col-span-3 w-fit ml-auto p-10 border-2 border-neutral-700 flex md:flex-row flex-col md:items-end justify-end mt-10 gap-x-10 gap-y-20"
-					style="grid-row-start: 3; grid-row-end: 3; 	grid-column: span 3 / span 3; margin-left: auto; border: 1px solid; display: flex; flex-direction: column; padding: 0.5rem; gap: 0.5rem"
+					id="send-form"
+					class=""
+					style=""
 				>
-					<div
-						class="w-fit flex flex-col md:flex-row gap-x-10 gap-y-20"
-						style="display: flex; flex-direction: column; gap: 0.5rem"
-					>
-						<div
-							class=" flex flex-col flex-1 gap-5 pointer-events-none"
-							style="display: flex; flex-direction: column;"
-						>
-							<label for="component" class="text-sm">Component</label>
-							<input
-								type="text"
-								name="component"
-								id="component"
-								bind:value={$selected}
-								readonly
-								class="w-full p-5 border-2 border-neutral-300 bg-neutral-300"
-							/>
+					<div class="inputs-wrapper">
+						<div class="input-wrapper">
+							<label for="component">Component</label>
+							<input type="text" name="component" id="component" bind:value={$selected} readonly />
 						</div>
-						<div class=" flex flex-col flex-1 gap-5" style="display: flex; flex-direction: column;">
-							<label for="note" class="text-sm">Note</label>
+						<div class="input-wrapper">
+							<label for="note">Note</label>
 							<input
 								type="text"
 								name="note"
 								id="note"
 								bind:value={note}
 								placeholder="Add a note..."
-								class="p-5 border-2 border-neutral-300 bg-trans"
 							/>
 						</div>
-						<div class="flex flex-col flex-1 gap-5" style="display: flex; flex-direction: column;">
-							<label for="to" class="text-sm">To</label>
+						<div class="input-wrapper">
+							<label for="to">To</label>
 							{#if invalidEmail}
 								<div>This field is required.</div>
 							{/if}
@@ -322,91 +282,402 @@
 								required
 								bind:value={email}
 								placeholder="name@example.com"
-								class="w-full p-5 border-2 focus:border-yellow invalid:border-red border-neutral-300 bg-trans"
 							/>
 						</div>
 					</div>
-					<input hidden name="html" type="text" bind:value={interfaceSrc} />
-					<button
-						type="submit"
-						class="py-5 px-20 rounded-full border-2 h-fit bg-neutral-700 border-neutral-700 text-neutral-100 hover:text-neutral-700 hover:bg-neutral-100 {sending
-							? 'pointer-events-none cursor-wait opacity-50'
-							: ''} {success ? 'pointer-events-none' : ''}"
-					>
-						<div class="relative">
-							<div class:opacity-0={sending || success === true || success === false}>Send</div>
-							{#if sending}
-								<div class="absolute inset-0">...</div>
-							{/if}
-							{#if success === true}
-								<div class="absolute left-1/2 top-1/2 w-fit -translate-x-1/2 -translate-y-1/2">
-									{@html icons.check}
-								</div>
-							{:else if success === false}
-								<div class="absolute left-1/2 top-1/2 w-fit -translate-x-1/2 -translate-y-1/2">
-									{@html icons.error}
-								</div>
-							{/if}
+					<input hidden tabindex="-1" name="html" type="text" bind:value={interfaceSrc} />
+					<button type="submit" disabled={sending || success}>
+						<div class="send" class:hide={sending || success === true || success === false}>
+							Send
 						</div>
+						{#if sending}
+							<div>...</div>
+						{/if}
+						{#if success === true}
+							<div>
+								{@html icons.check}
+							</div>
+						{:else if success === false}
+							<div>
+								{@html icons.error}
+							</div>
+						{/if}
 					</button>
 				</form>
 			{/if}
 		</div>
-		<!-- Main interface -->
 		<div
-			style="max-width: 100%; position: relative; height: 100%; max-height: 100%; padding: 0rem 1rem {spacingBottom} 1rem;"
-			class="min-w-[283px] max-w-full min-h-[103px] resize z-[1] flex max-h-full h-full relative bg-neutral-100"
+			id="interface-wrapper"
+			style="padding-bottom: {spacingBottom};"
 			bind:clientWidth={w}
 			bind:clientHeight={h}
 		>
-			<div
-				style="max-width: 100%; position: relative; width: 100%; height: 100%; max-height: 100%; max-width: 100%; display: flex"
-				class="relative w-full h-full border-2 {showSendEmailForm || showComponentList
-					? 'border-neutral-300'
-					: 'border-neutral-700'}"
-			>
+			<div id="interface" class:focus-out={showSendEmailForm || showComponentList}>
 				{#if !$selected && !selectingComponent}
-					<div
-						class="m-auto text-center"
-						style="position: absolute; inset: 0; width: fit-content; height: fit-content; margin: auto; z-index: 10000"
-					>
-						Select an email
-					</div>
-				{/if}
-				{#if $selected}
-					<div
-						style="position: absolute; top: 0.5rem; right: 1rem; z-index: 10000"
-						class=" text-[1.4rem] text-[black] bg-none absolute z-10 right-10 top-5 mix-blend-difference invert;"
-					>
+					<div id="select-an-email">Select an email</div>
+				{:else if shownInterface !== 'code'}
+					<div id="dimensions">
 						{w}px × {h}px
 					</div>
 				{/if}
-				<iframe
-					srcdoc={interfaceSrc !== '' ? interfaceSrc : 'Nothing to show...'}
-					title="styled-email-preview"
-					class="w-full"
-					style="width: 100%; height: 100%; {unstyled ? 'border: 2px solid;' : ''}"
-					width="100%"
-					height="100%"
-				/>
+				{#if shownInterface === 'code'}
+					<div id="code">
+						{@html get(code)}
+					</div>
+				{:else}
+					<iframe
+						srcdoc={interfaceSrc !== '' ? interfaceSrc : 'Nothing to show...'}
+						title="styled-email-preview"
+						width="100%"
+						height="100%"
+						frameborder="0"
+					/>
+				{/if}
 			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-	:focus-visible,
-	input[type='radio']:focus-visible + label {
-		outline: 2px auto Highlight;
-		outline: 2px auto -webkit-focus-ring-color;
+	:root {
+		--light-100: rgb(238, 238, 238);
+		--light-300: #dcdcdc;
+		--light-700: #323232;
+		--dark-100: #323232;
+		--dark-300: #484848;
+		--dark-700: rgb(238, 238, 238);
 	}
-	input[type='radio']:checked + label {
-		outline: 2px auto Highlight;
-		outline: 2px auto -webkit-focus-ring-color;
+	@media (prefers-color-scheme: dark) {
+		#u,
+		#u * {
+			--100: var(--dark-100);
+			--300: var(--dark-300);
+			--700: var(--dark-700);
+		}
 	}
-	.email-preview-wrapper * {
+	@media (prefers-color-scheme: light) {
+		#u,
+		#u * {
+			--100: var(--light-100);
+			--300: var(--light-300);
+			--700: var(--light-700);
+		}
+	}
+	#u {
+		color: var(--700);
+		background-color: var(--100);
+	}
+	#u * {
 		all: initial;
-		background-color: white;
+		font-family: inherit;
+		color: inherit;
+		currentcolor: inherit;
+		border-color: inherit;
+	}
+	#u *:focus-visible:not(input[type='radio']),
+	#u input[type='radio']:focus-visible + label {
+		outline: 2px auto Highlight;
+		outline: 2px auto -webkit-focus-ring-color;
+	}
+	#u button {
+		width: fit-content;
+		color: var(--700);
+	}
+	#u button,
+	#u label,
+	#u button * {
+		transition: 0.15s;
+		color: var(--700);
+	}
+	#u button,
+	#u label,
+	#u button *,
+	#u label * {
+		cursor: pointer;
+	}
+	#u {
+		position: absolute;
 		z-index: 9999;
+		inset: 0;
+		width: 100%;
+		height: 100svh;
+		display: flex;
+		margin: 0 auto;
+		background-color: white;
+	}
+	#content {
+		background-color: var(--100);
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		overflow: hidden;
+	}
+	#navigation {
+		display: grid;
+		display: grid;
+		grid-template-rows: auto;
+		grid-template-columns: repeat(3, minmax(auto, 1fr));
+		row-gap: 0;
+		padding: 0 1rem;
+		@media (min-width: 475px) {
+			padding: 0 4rem;
+		}
+	}
+	#u button.drop-down {
+		width: fit-content;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.1rem 0.5rem;
+		color: var(--700);
+		border: 2px solid var(--300);
+		border-radius: 100vw;
+	}
+	#u button.drop-down * {
+		color: inherit;
+	}
+	#u button.drop-down:hover {
+		border-color: var(--700);
+	}
+	#u button.drop-down.show {
+		color: var(--100);
+		background-color: var(--700);
+		border-color: var(--700);
+	}
+	#u button.drop-down.show * {
+		color: var(--100);
+	}
+	#u button.drop-down > * {
+		display: flex;
+	}
+	#u button.drop-down .chevron.rotate {
+		transform: rotate(180deg);
+	}
+	#u button#send-toggle {
+		margin-left: auto;
+		margin-right: 0;
+	}
+	#u *[disabled],
+	#u *[disabled] *,
+	#u *.disabled,
+	#u *.disabled *,
+	#u *[disabled] ~ label {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+	#interface-switch {
+		display: flex;
+		width: fit-content;
+		margin: 0 auto;
+		border: 2px solid;
+		border-radius: 100vw;
+	}
+	#interface-switch .input-wrapper.equal-width {
+		width: 50%;
+	}
+	#interface-switch .input-wrapper {
+		/* overflow: hidden; */
+		text-align: center;
+	}
+	#interface-switch .input-wrapper input {
+		/* opacity: 0; */
+		position: absolute;
+	}
+	#interface-switch .input-wrapper label {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		padding: 0rem 0.5rem;
+		text-align: center;
+	}
+	#interface-switch .input-wrapper label.equal-width {
+		padding: 0rem 1rem;
+	}
+	#interface-switch .input-wrapper label.active {
+		background-color: var(--700);
+		color: var(--100);
+	}
+	#interface-switch .input-wrapper label:not(.active):hover {
+		background-color: var(--300);
+	}
+	#interface-switch .input-wrapper:first-child label {
+		border-top-left-radius: 100vw;
+		border-bottom-left-radius: 100vw;
+	}
+	#interface-switch .input-wrapper:last-child label {
+		border-top-right-radius: 100vw;
+		border-bottom-right-radius: 100vw;
+	}
+	#files-form {
+		grid-row-start: 2;
+		grid-row-end: 2;
+		grid-column: 1 / 3;
+		width: fit-content;
+		height: fit-content;
+		max-height: 25vh;
+		overflow-y: scroll;
+		display: flex;
+		flex-direction: column;
+		margin-top: 1rem;
+		padding: 1rem;
+		border: 2px solid var(--700);
+		gap: 1rem;
+	}
+	#files-form fieldset input {
+		position: absolute;
+		/* opacity: 0; */
+	}
+	#files-form fieldset label {
+		display: flex;
+		align-items: center;
+		white-space: nowrap;
+		padding: 0.5rem 1rem;
+	}
+	#files-form fieldset label:hover {
+		background-color: var(--300);
+	}
+	#files-form fieldset label.selected {
+		background-color: var(--700);
+		color: var(--100);
+	}
+	#send-form {
+		grid-row-start: 3;
+		grid-row-end: 3;
+		grid-column: span 3 / span 3;
+		width: fit-content;
+		margin-left: auto;
+		padding: 1rem;
+		border: 2px solid var(--700);
+		display: flex;
+		flex-direction: column;
+		margin-top: 1rem;
+		row-gap: 2rem;
+		column-gap: 1rem;
+	}
+	#send-form .inputs-wrapper {
+		width: fit-content;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	#send-form .input-wrapper {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		gap: 0.5rem;
+	}
+	#send-form .input-wrapper input:read-only {
+		pointer-events: none;
+		background-color: var(--300);
+	}
+	#send-form .input-wrapper label {
+		font-size: 0.8em;
+	}
+	#send-form .input-wrapper input {
+		border: 2px solid var(--300);
+		background-color: transparent;
+		padding: 0.5rem;
+	}
+	#send-form input[type='email']:invalid {
+		border-color: red;
+	}
+	#send-form input[hidden] {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+		user-select: none;
+	}
+	#send-form button {
+		height: fit-content;
+		position: relative;
+		display: flex;
+		justify-content: center;
+		padding: 0.5rem 2rem;
+		border: 2px solid var(--700);
+		border-radius: 100vw;
+		color: var(--100);
+		background-color: var(--700);
+	}
+	#send-form button * {
+		display: flex;
+		justify-content: center;
+		color: var(--100);
+	}
+	#send-form button:hover {
+		background-color: var(--100);
+	}
+	#send-form button:hover * {
+		color: var(--700);
+	}
+	#send-form button div.hide {
+		opacity: 0;
+	}
+	#send-form button *:not(.send) {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	#interface-wrapper {
+		max-width: 100%;
+		position: relative;
+		height: 100%;
+		max-height: 100%;
+		min-width: 283px;
+		min-height: 103px;
+		resize: both;
+		z-index: 1;
+		display: flex;
+		background-color: var(--100);
+		padding-left: 1rem;
+		padding-right: 1rem;
+		@media (min-width: 475px) {
+			padding-left: 4rem;
+			padding-right: 4rem;
+		}
+	}
+	#interface {
+		max-width: 100%;
+		position: relative;
+		width: 100%;
+		height: 100%;
+		max-height: 100%;
+		max-width: 100%;
+		display: flex;
+		border: 2px solid var(--700);
+	}
+	#interface.focus-out {
+		border-color: var(--300);
+	}
+	#interface #select-an-email {
+		position: absolute;
+		inset: 0;
+		width: fit-content;
+		height: fit-content;
+		margin: auto;
+		text-align: center;
+		color: var(--light-100);
+		mix-blend-mode: difference;
+	}
+	#interface #dimensions {
+		position: absolute;
+		top: 0.5rem;
+		right: 1rem;
+		z-index: 10;
+		font-size: 0.8em;
+		color: var(--light-100);
+		mix-blend-mode: difference;
+	}
+	#interface #code {
+		overflow: scroll;
+		background-color: transparent;
+	}
+	#interface iframe {
+		width: 100%;
+		height: 100%;
+		background-color: var(--light-100);
 	}
 </style>
