@@ -1,4 +1,4 @@
-import { convert } from 'html-to-text';
+import { convert } from '@steveninety/html-to-text';
 import pretty from 'pretty';
 import type { ComponentProps, ComponentType, SvelteComponent } from 'svelte';
 

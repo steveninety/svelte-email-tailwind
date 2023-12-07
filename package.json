@@ -1,12 +1,19 @@
 {
 	"name": "svelte-email-tailwind",
-	"version": "0.0.1",
+	"version": "0.0.8",
 	"description": "Build emails with Svelte and Tailwind",
 	"author": {
 		"name": "Steven Polak"
 	},
 	"contributors": [
 		"Carsten Lebek"
+	],
+	"keywords": [
+		"svelte",
+		"email",
+		"tailwind",
+		"sveltekit",
+		"resend"
 	],
 	"scripts": {
 		"dev": "vite dev",
@@ -53,15 +60,10 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"html-to-text": "^9.0.5",
+		"@steveninety/html-to-text": "^9.0.5",
 		"linkedom": "^0.16.1",
 		"pretty": "^2.0.0",
 		"svelte": "^3.59.2",
 		"tw-to-css": "^0.0.12"
-	},
-	"pnpm": {
-		"patchedDependencies": {
-			"html-to-text@9.0.5": "patches/html-to-text@9.0.5.patch"
-		}
 	}
 }
