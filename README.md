@@ -116,9 +116,9 @@ A set of standard components to help you build amazing emails without having to 
 - Heading
 - Button
 - Link
-- Image
-- Divider
-- Paragraph
+- Img
+- Hr
+- Text
 - Container
 - Preview
 - Body
