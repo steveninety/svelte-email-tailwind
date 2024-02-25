@@ -1,18 +1,13 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  html-to-text@9.0.5:
-    hash: trvtir2o37xtyuluvdgsaxfruu
-    path: patches/html-to-text@9.0.5.patch
-
 dependencies:
-  html-to-text:
+  '@steveninety/html-to-text':
     specifier: ^9.0.5
-    version: 9.0.5(patch_hash=trvtir2o37xtyuluvdgsaxfruu)
+    version: 9.0.5
   linkedom:
     specifier: ^0.16.1
     version: 0.16.1
@@ -497,7 +492,7 @@ packages:
     resolution: {integrity: sha512-nrim7wiACnaXsGtL7GF6jp3Qmml8J6vAjAH88jkC8lIbfNZaCyuPQHANjyYIXlvQeAbsWADQJFZgOHUqFqjh/A==}
     engines: {node: '>=18.0.0'}
     dependencies:
-      html-to-text: 9.0.5(patch_hash=trvtir2o37xtyuluvdgsaxfruu)
+      html-to-text: 9.0.5
       pretty: 2.0.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -508,6 +503,17 @@ packages:
     dependencies:
       domhandler: 5.0.3
       selderee: 0.11.0
+
+  /@steveninety/html-to-text@9.0.5:
+    resolution: {integrity: sha512-N+VHwfWJf7tG9u2fvWg3qIPzWwbmSWLlocHJoxkFW0WqfYjki2uO6EMM2H02Lt+nyzdETo76C6d4DlfMpeU2oQ==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@selderee/plugin-htmlparser2': 0.11.0
+      deepmerge: 4.3.1
+      dom-serializer: 2.0.0
+      htmlparser2: 8.0.2
+      selderee: 0.11.0
+    dev: false
 
   /@sveltejs/adapter-auto@2.1.1(@sveltejs/kit@1.27.4):
     resolution: {integrity: sha512-nzi6x/7/3Axh5VKQ8Eed3pYxastxoa06Y/bFhWb7h3Nu+nGRVxKAy3+hBJgmPCwWScy8n0TsstZjSVKfyrIHkg==}
@@ -1546,7 +1552,7 @@ packages:
     resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
     dev: false
 
-  /html-to-text@9.0.5(patch_hash=trvtir2o37xtyuluvdgsaxfruu):
+  /html-to-text@9.0.5:
     resolution: {integrity: sha512-qY60FjREgVZL03vJU6IfMV4GDjGBIoOyvuFdpBDIX9yTlDw0TjxVBQp+P8NvpdIXNJvfWBTNul7fsAQJq2FNpg==}
     engines: {node: '>=14'}
     dependencies:
@@ -1555,7 +1561,7 @@ packages:
       dom-serializer: 2.0.0
       htmlparser2: 8.0.2
       selderee: 0.11.0
-    patched: true
+    dev: true
 
   /htmlparser2@8.0.2:
     resolution: {integrity: sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA==}

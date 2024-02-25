@@ -1,22 +1,26 @@
 import type { Actions } from './$types';
-import { renderSvelte } from 'svelte-email-tailwind'
-import { renderTailwind } from 'svelte-email-tailwind'
+import { renderSvelte } from '$lib'
+import { renderTailwind } from '$lib'
 import type { TailwindConfig } from 'tw-to-css'
-import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
+// import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 import { Resend } from 'resend';
-
+import type { ComponentProps } from 'svelte';
+import type WelcomeTailwindProps from '$lib/emails/welcome-tailwind.svelte';
+import WelcomeTailwind from '$lib/emails/welcome-tailwind.svelte';
+import { compile } from 'svelte/compiler';
+import { build, getValueByBracketNotation } from '$lib/buildEmails';
 const tailwindConfig: TailwindConfig = {
-    theme: {
-        screens: {
-            md: { max: '767px' },
-            sm: { max: '475px' }
-        },
-        extend: {
-            colors: {
-                brand: 'rgb(255, 62, 0)'
-            }
-        }
+  theme: {
+    screens: {
+      md: { max: '767px' },
+      sm: { max: '475px' }
+    },
+    extend: {
+      colors: {
+        brand: 'rgb(255, 62, 0)'
+      }
     }
+  }
 }
 
 /**
@@ -28,78 +32,95 @@ const tailwindConfig: TailwindConfig = {
 const emailComponents = import.meta.glob(`/src/lib/emails/*.svelte`, { eager: true })
 
 export async function load() {
-    if (Object.keys(emailComponents).length === 0) return { emailComponentList: null }
-
-    return { emailComponentList: createEmailComponentList(emailComponents) }
+  if (Object.keys(emailComponents).length === 0) return { emailComponentList: null }
+  build()
+  return { emailComponentList: createEmailComponentList(emailComponents) }
 }
 
 export const actions = {
 
-    /**
-     * 
-     * Imports the requested svelte template. 
-     * Renders the template into html. 
-     * Identifies and converts Tailwind classes into responsive (inline) styles.
-     */
+  /**
+   * 
+   * Imports the requested svelte template. 
+   * Renders the template into html. 
+   * Identifies and converts Tailwind classes into responsive (inline) styles.
+   */
 
-    'create-email': async (event) => {
-        const data = await event.request.formData()
+  'create-email': async (event) => {
+    const data = await event.request.formData()
 
-        const emailComponentName = data.get('email-component')
+    const emailComponentName = data.get('email-component')
 
-        const getEmailComponent = async () => {
-            try {
-                return (await import(/* @vite-ignore */`/src/lib/emails/${emailComponentName}.svelte`)).default
-            } catch {
-                return null
-            }
-        }
+    const getEmailComponent = async () => {
+      try {
+        return (await import(/* @vite-ignore */`/src/lib/emails/${emailComponentName}.svelte`)).default
+      } catch {
+        return null
+      }
+    }
 
-        const emailComponent = await getEmailComponent()
+    const emailComponent = await getEmailComponent()
+    // const props: ComponentProps<WelcomeTailwindProps> = { firstName: '{firstName}' }
+    const props: ComponentProps<WelcomeTailwindProps> = { props: { firstName: '{firstName}' } }
+    const htmlRenderedTailwind = renderTailwind({ component: emailComponent, tailwindConfig, })
 
-        const htmlRenderedTailwind = renderTailwind({ component: emailComponent, tailwindConfig })
 
-        const plainText = renderSvelte({
-            template: emailComponent,
-            options: { plainText: true }
-        })
+    const plainText = renderSvelte({
+      template: emailComponent,
+      options: { plainText: true }
+    })
 
-        return { htmlRenderedTailwind, plainText }
-    },
+    const myObject = {
+      person: {
+        names: ['John', 'Doe'],
+        age: 30
+      },
+      address: {
+        city: 'New York',
+        zip: 10001
+      }
+    };
 
-    /**
-     * 
-     * Sends the email using the received form data. 
-     * You can swap out Resend for any other provider.
-     * 
-     */
+    const path1 = 'person.names[0]';
+    const result1 = getValueByBracketNotation(myObject, path1);
+    console.log(result1);  // Output: John
 
-    'send-email': async ({ request }): Promise<{ success: boolean }> => {
-        const data = await request.formData()
+    return { htmlRenderedTailwind, plainText }
+  },
 
-        const resend = new Resend(PRIVATE_RESEND_API_KEY);
+  /**
+   * 
+   * Sends the email using the received form data. 
+   * You can swap out Resend for any other provider.
+   * 
+   */
 
-        async function sendEmail(): Promise<{ success: boolean, error?: any }> {
-            const resendReq = await resend.emails.send({
-                from: 'Svelte Email Tailwind <onboarding@resend.dev>',
-                to: `${data.get('to')}`,
-                subject: `${data.get('component')} ${data.get('note') ? "| " + data.get('note') : ""}`,
-                html: `${data.get('html')}`
-            });
+  'send-email': async ({ request }): Promise<{ success: boolean }> => {
+    const data = await request.formData()
+    // stringify api key to comment out temp
+    const resend = new Resend('PRIVATE_RESEND_API_KEY');
 
-            if (resendReq.error) {
-                console.log(resendReq.error)
+    async function sendEmail(): Promise<{ success: boolean, error?: any }> {
+      const resendReq = await resend.emails.send({
+        from: 'Svelte Email Tailwind <onboarding@resend.dev>',
+        to: `${data.get('to')}`,
+        subject: `${data.get('component')} ${data.get('note') ? "| " + data.get('note') : ""}`,
+        html: `${data.get('html')}`
+      });
 
-                return { success: false }
-            }
+      if (resendReq.error) {
+        console.log(resendReq.error)
 
-            console.log("Email was sent successfully.")
+        return { success: false }
+      }
 
-            return { success: true }
-        }
+      console.log("Email was sent successfully.")
 
-        return await sendEmail()
-    },
+      return { success: true }
+    }
+
+    return await sendEmail()
+  },
 
 } satisfies Actions;
 
@@ -109,14 +130,14 @@ export const actions = {
  */
 
 function createEmailComponentList(paths: typeof emailComponents) {
-    const emailComponentList: string[] = [];
+  const emailComponentList: string[] = [];
 
-    for (const path in paths) {
-        if (path.includes(`.svelte`)) {
-            const fileName = path.substring(path.lastIndexOf('/') + 1).replace('.svelte', '')
-            emailComponentList.push(fileName)
-        }
+  for (const path in paths) {
+    if (path.includes(`.svelte`)) {
+      const fileName = path.substring(path.lastIndexOf('/') + 1).replace('.svelte', '')
+      emailComponentList.push(fileName)
     }
+  }
 
-    return emailComponentList
+  return emailComponentList
 }

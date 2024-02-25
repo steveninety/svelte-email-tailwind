@@ -92,20 +92,11 @@ export async function POST({ request }) {
 
     if (templateName === 'welcome-tailwind') {
         const props: ComponentProps<WelcomeTailwindProps> = {  firstName: "Steven" } 
-        return await renderTailwind(
-            { 
-                template: { 
-                    component: 
-                        WelcomeTailwind 
-                    }, 
-                props, 
-                options 
-            }, 
-            { 
-                useTailwind: true, 
-                config: config 
-            }
-        )
+        return await renderTailwind({ 
+          component: WelcomeTailwind,
+          componentProps: props, 
+          tailwindConfig: config 
+        })
     }
 }
 
