@@ -6,4 +6,4 @@
 	export let form: ActionData;
 </script>
 
-<EmailPreviews {data} {form} unstyled={false} email="name@example.com" />
+<EmailPreviews {data} {form} email="name@example.com" />
