@@ -1,5 +1,3 @@
-<svelte:options immutable={true} />
-
 <script lang="ts">
 	import { Body, Button, Container, Head, Hr, Html, Img, Preview, Section, Text } from '$lib';
 
@@ -12,14 +10,22 @@
 		fontFamily:
 			'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif'
 	};
-	export let lastName = '';
-	export let purchased_products = ['hello', { something: 25, somethingElse: [2, 18] }];
 </script>
 
 <Html lang="en" class="bg-white">
-	<Head />
+	<Head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<style>
+			@media (max-width: 767px) {
+				.md_text_white {
+					color: white;
+				}
+			}
+		</style>
+	</Head>
 	<Preview preview="Welcome to svelte-email" />
-	<Body style={fontFamily}>
+	<Body>
 		<Container class="my-0 mx-auto text-black">
 			<Section>
 				<Img
@@ -30,14 +36,23 @@
 					height="50"
 				/>
 				<Text class="text-[16px] leading-[26px] text-inherit">
-					<div purchased_products.chars>
-						{#each purchased_products as value}
-							<span>{value}</span>
-						{/each}
-					</div>
-					{purchased_products[0]}
-					{name.firstName.value}
-					{lastName}, welcome to svelte-email
+					<!-- <div data-prop={`["purchased_products"]["0"]`}> -->
+					<!-- 	{#each purchased_products as value} -->
+					<!-- 		<span>{value.field1}</span> -->
+					<!-- 		{#if value.field2.length} -->
+					<!-- 			<div data-prop={`["purchased_products"]["0"]["field2"]`}> -->
+					<!-- 				{#each value.field2 as field2} -->
+					<!-- 					<span>{field2}</span> -->
+					<!-- 				{/each} -->
+					<!-- 			</div> -->
+					<!-- 		{:else} -->
+					<!-- 			<span>{value.field2}</span> -->
+					<!-- 		{/if} -->
+					<!-- 	{/each} -->
+					<!-- </div> -->
+					<!-- {purchased_products[0]} -->
+					<!-- {name.firstName.value} -->
+					welcome to svelte-email
 				</Text>
 			</Section>
 			<Section>

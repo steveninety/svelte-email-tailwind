@@ -48,6 +48,7 @@
 		"postcss": "^8.4.31",
 		"prettier": "^2.8.8",
 		"prettier-plugin-svelte": "^2.10.1",
+		"recast": "^0.23.4",
 		"resend": "^2.0.0",
 		"shiki": "^0.14.5",
 		"svelte-check": "^3.6.0",
@@ -61,6 +62,7 @@
 	"type": "module",
 	"dependencies": {
 		"@steveninety/html-to-text": "^9.0.5",
+		"acorn": "^8.11.3",
 		"linkedom": "^0.16.1",
 		"pretty": "^2.0.0",
 		"svelte": "^3.59.2",

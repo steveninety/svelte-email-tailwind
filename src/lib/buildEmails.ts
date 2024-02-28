@@ -1,6 +1,6 @@
 import { code } from '$lib/emails/welcome-tailwind.svelte?raw&svelte&type=script'
 
-export function build() {
+export function build(code: string) {
   /**
        * Handle arrays / {#each}-block with variable length:
        * - must wrap each block in div with data-attribute representing the exact prop name (snake case) 
@@ -15,20 +15,20 @@ export function build() {
 
   // find all instances of '= $$props;' and the nearest instance of 'let {' before '= $$props;'
   const regexp = /= \$\$props;/g
-  let match
+  let matchEnd
   let props = {}
 
-  while ((match = regexp.exec(code)) !== null) {
-    // console.log(`Found ${match[0]} start=${match.index} end=${regexp.lastIndex}.`);
-
-    const stringTillMatch = code.substring(0, match.index)
+  // as long as we find '= $$props;' ...
+  while ((matchEnd = regexp.exec(code)) !== null) {
+    // console.log(`Found ${matchEnd[0]} start=${matchEnd.index} end=${regexp.lastIndex}.`);
+    const stringTillMatch = code.substring(0, matchEnd.index)
     const regexp2 = /let \{/g
-    let match2
-    let startIndex = -1
+    let matchStart
+    let matchStartIndex = -1
 
-    // from each instance, go back until finding 'let {'
-    while ((match2 = regexp2.exec(stringTillMatch)) !== null) {
-      startIndex = match2.index;
+    // from each instance, find the closest 'let {' BEFORE the matchEnd
+    while ((matchStart = regexp2.exec(stringTillMatch)) !== null) {
+      matchStartIndex = matchStart.index;
     }
 
     const result = stringTillMatch
@@ -36,19 +36,24 @@ export function build() {
       .trim()
       // remove closing bracket ('}') from the end  
       .slice(0, -1)
-      // keep only the part starting with 
-      .substring(startIndex)
-      .trim()
+      // keep only the part starting at 'let {'
+      .substring(matchStartIndex)
+      // remove 'let {'
       .replace(/^let \{/, '')
+      // replace '=' with ':' because turning into (JSON) obj props
       .replace(/ =/g, ':')
+      // put double quotes around each prop within '[]' 
       .replace(/(\w+):/g, '"$1":')
 
+    // create a JS object by surrounding with '{}' and parsing
     const obj = JSON.parse("{" + result + "}")
     Object.assign(props, obj)
     // console.log(lastMatchIndex !== -1 ? substringBeforeIndex.substring(lastMatchIndex) : null)
   }
 
-  console.log(assignSelectors(props))
+  // console.log(props)
+  // console.log(assignSelectors(props))
+  return assignSelectors((props))
 }
 
 function assignSelectors(obj, objName = 'props') {
@@ -74,11 +79,13 @@ function assignSelectors(obj, objName = 'props') {
   return obj;
 }
 
+
+
 export function getValueByBracketNotation(obj, path) {
   // Split by '[' or ']'
   const keys = path.split(/[\[\]]/).filter(Boolean);
   let value = obj;
-  console.log(keys)
+  // console.log(keys)
   for (const key of keys) {
     if (value && typeof value === 'object') {
       value = value[key];

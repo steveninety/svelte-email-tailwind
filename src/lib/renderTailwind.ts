@@ -14,7 +14,7 @@ export const renderTailwind = <Component extends SvelteComponent>({ html, compon
   let renderedComponent: string
 
   if (component) {
-    console.log(componentProps)
+    // console.log(componentProps)
     renderedComponent = renderSvelte({
       template: component,
       props: componentProps,
@@ -59,7 +59,7 @@ export const renderTailwind = <Component extends SvelteComponent>({ html, compon
   return htmlWithTailwind
 }
 
-const cleanCss = (css: string) => {
+export const cleanCss = (css: string) => {
   let newCss = css
     .replace(/\\/g, '')
     // find all css selectors and look ahead for opening and closing curly braces
@@ -72,7 +72,7 @@ const cleanCss = (css: string) => {
   return newCss;
 }
 
-const makeCssMap = (css: string) => {
+export const makeCssMap = (css: string) => {
   const cssNoMedia = css.replace(/@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm, '');
   const cssMap = cssNoMedia.split('}').reduce((acc, cur) => {
     const [key, value] = cur.split('{');
@@ -85,7 +85,7 @@ const makeCssMap = (css: string) => {
   return cssMap;
 }
 
-const getMediaQueryCss = (css: string) => {
+export const getMediaQueryCss = (css: string) => {
   const mediaQueryRegex = /@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm;
   return (
     css
