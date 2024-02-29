@@ -11,15 +11,15 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 
-	const styleDefault = {
+	const styleDefault = styleToString({
 		...style
-	};
-	
+	});
 </script>
 
-<td style={styleToString(styleDefault)} {...$$restProps} class={className}>
+<td style={styleDefault + styleString} {...$$restProps} class={className}>
 	<slot />
 </td>

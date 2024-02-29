@@ -13,18 +13,19 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 	export let target = '_blank';
 	export let href = '';
 
-	const styleDefault = {
+	const styleDefault = styleToString({
 		color: '#067df7',
 		textDecoration: 'none',
 		...style
-	};
+	});
 </script>
 
-<a {...$$restProps} {href} {target} style={styleToString(styleDefault)} class={className}>
+<a {...$$restProps} {href} {target} style={styleDefault + styleString} class={className}>
 	<slot />
 </a>

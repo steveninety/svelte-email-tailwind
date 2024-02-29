@@ -19,14 +19,11 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 	export let as = 'h1';
-</script>
-
-<svelte:element
-	this={as}
-	style={styleToString({
+	const styleDefault = styleToString({
 		...withMargin({
 			m: $$props.m,
 			mx: $$props.mx,
@@ -37,9 +34,9 @@
 			ml: $$props.ml
 		}),
 		...style
-	})}
-	class={className}
-	{...$$restProps}
->
+	});
+</script>
+
+<svelte:element this={as} style={styleDefault + styleString} class={className} {...$$restProps}>
 	<slot />
 </svelte:element>

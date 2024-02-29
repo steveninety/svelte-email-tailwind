@@ -11,11 +11,12 @@
 	}
 
 	export let style = {};
-	export let inlineStyle = '';
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
+	const styleDefault = styleToString({ ...style });
 </script>
 
-<body {...$$restProps} style={styleToString(style) + ' ' + inlineStyle} class={className}>
+<body {...$$restProps} style={styleDefault + styleString} class={className}>
 	<slot />
 </body>

@@ -11,15 +11,16 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 
-	const styleDefault = {
+	const styleDefault = styleToString({
 		width: '100%',
 		border: 'none',
 		borderTop: '1px solid #eaeaea',
 		...style
-	};
+	});
 </script>
 
-<hr style={styleToString(styleDefault)} {...$$restProps} class={className}/>
+<hr style={styleDefault + styleString} {...$$restProps} class={className} />
