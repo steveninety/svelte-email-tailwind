@@ -1,16 +1,12 @@
-import { compile } from 'svelte/compiler';
 import fs from 'fs'
 import path from 'path'
 import { URL } from 'url';
-import { cleanCss, getMediaQueryCss, makeCssMap } from '$lib/renderTailwind';
 import { tailwindToCSS, type TailwindConfig } from 'tw-to-css'
-
-
-
+import { compile } from 'svelte/compiler';
 
 /* 
- * PART 1 (X): transform tailwind classes to inline styles inside the compiled js ssr component file.
- * 1. Find every .$$render( $$result, { alt: "Svelte logo", class: "my-0 mr-auto" },
+ * PART 1 (X): write script to transform tailwind classes to inline styles inside the compiled js ssr component file.
+ * 1. Locate the props .$$render($$result, { ... },
  * 2. JSON.parse the prop obj after "$$result,"
  * 3. stylify the TW classes and add them as a style prop to the obj
  * 4. In the code string, replace the old props obj with the new props obj 
@@ -35,7 +31,7 @@ import { tailwindToCSS, type TailwindConfig } from 'tw-to-css'
  * 3. Find workaround for HMR endless loop when writing to the file system from a server file.
 */
 
-export async function buildTailwind(rawSvelteCode: string, tailwindConfig: TailwindConfig) {
+export default async function buildEmail(rawSvelteCode: string, tailwindConfig?: TailwindConfig) {
   const __dirname = new URL('.', import.meta.url).pathname;
   const pathToSsrCode = path.join(__dirname, 'welcome-tailwind.js')
 
@@ -52,6 +48,18 @@ export async function buildTailwind(rawSvelteCode: string, tailwindConfig: Tailw
   // further process the tailwind css
   const cleanTwCss = cleanCss(twCss)
 
+  // replace props and head
+  const codeNewProps = substituteProps(code, cleanTwCss)
+  const codeNewHead = substituteHead(codeNewProps, cleanTwCss)
+
+  fs.writeFileSync(pathToSsrCode, codeNewHead, 'utf8')
+  const getCompiledEmail = async () => (await import('./welcome-tailwind.js')).default
+  const compiledEmail = await getCompiledEmail()
+
+  return compiledEmail
+}
+
+function substituteProps(code: string, twClean: string) {
   // unique identifier of all prop objects
   const regexStart = /\$\$result,\s*{/g
   let matchStart
@@ -59,36 +67,33 @@ export async function buildTailwind(rawSvelteCode: string, tailwindConfig: Tailw
   while ((matchStart = regexStart.exec(code)) !== null) {
     const startIndex = regexStart.lastIndex - 1
     const codeSliced = code.substring(startIndex)
-    // const indexStart = code.length - codeSliced.length
 
-    const { matchPre: propsRaw } = matchClosingBracket(codeSliced)
+    // locate the props object
+    const propsRaw = matchClosingBracket(codeSliced)
 
-    // turn stringified obj into a JSON-praseable obj so we can work with an obj instead of string
+    /* 
+     * turn stringified obj into a JSON-praseable obj so we can work with an obj instead of string
+     * assumptions: 
+     * (1) style props are always variable references or spread-in objects,
+     * (2) all other props are always strings
+     * But all props could undergo same checks/transformations as style prop if later deemed necessary
+    */
     const propsCleaned = propsRaw
       .replace(/\s{2,}/g, ' ').trim() // remove all excess whitespace
-      .replace(/(\b\w+\b)(: ")/g, '"$1"$2') // e.g. { class: "text-lg" } -> { "class": "text-lg" }
-      .replace(/style:/g, '"style":') // e.g. style: fontFamily -> "style": fontFamily
-      // put double quotes around the style value,spread obj"{...obj1, ...obj2}"
-      .replace(/"style": \{([^}]*)\}/g, '"style": "{$1}"')
-      // todo: put double quotes around the style value if its a single variable name
-      .replace(/"style": (\w+)/g, '"style": "$1"')
+      .replace(/(\b\w+\b)(: ")/g, '"$1"$2') // { class: "text-lg" } -> { "class": "text-lg" }
+      .replace(/style:/g, '"style":') // style: fontFamily -> "style": fontFamily
+      .replace(/"style": \{([^}]*)\}/g, '"style": "{$1}"') // "style": "{...obj1, ...obj2}" -> "style": "{...obj1, ...obj2}" 
+      .replace(/"style": (\w+)/g, '"style": "$1"') // "style": fontFamily -> "style": "fontFamily"
       .replace(/'/g, '"') // replace single with double quotes (only found in values)
 
-    const propsInlinedTw = inlineTw(JSON.parse(propsCleaned), cleanTwCss)
+    const propsInlinedTw = inlineTw(JSON.parse(propsCleaned), twClean)
 
     const propsFinal = stringifyObj(propsInlinedTw)
 
     // replace old props obj for the new one
     code = substituteText(code, startIndex, propsRaw, propsFinal)
   }
-
-  const finalCode = substituteHead(code, cleanTwCss)
-
-  fs.writeFileSync(pathToSsrCode, finalCode, 'utf8')
-  const getCompiledEmail = async () => (await import('./welcome-tailwind.js')).default
-  const compiledEmail = await getCompiledEmail()
-
-  return compiledEmail
+  return code
 }
 
 function matchClosingBracket(queryString: string) {
@@ -98,9 +103,8 @@ function matchClosingBracket(queryString: string) {
     // & count opening brackets
     .match(/\{/g)?.length
 
-  if (!openingBracketCount) return {
-    matchPre: '',
-  }
+  if (!openingBracketCount) return ''
+
   // if style prop was a nested obj
   if (openingBracketCount > 2) {
     throw new Error('You have passed in a nested object as a style prop. Email component style props cannot be nested.')
@@ -118,7 +122,7 @@ function matchClosingBracket(queryString: string) {
     }
   })
 
-  let match: string = ''
+  let match = ''
 
   if (openingBracketCount === 2) {
     // for every additional '{' inbetween, find the next '}'
@@ -133,9 +137,8 @@ function matchClosingBracket(queryString: string) {
   } else if (openingBracketCount === 1) {
     match = queryString.substring(0, queryString.indexOf('}') + 1)
   }
-  return {
-    matchPre: match,
-  }
+
+  return match
 }
 
 function stringifyObj(obj: { [key: string]: string }): string {
@@ -229,4 +232,51 @@ function substituteHead(code: string, twClean: string) {
       + code.substring(headChildEnd)
       }`
   }
+}
+
+const cleanCss = (css: string) => {
+  let newCss = css
+    .replace(/\\/g, '')
+    // find all css selectors and look ahead for opening and closing curly braces
+    .replace(/[.\!\#\w\d\\:\-\[\]\/\.%\(\))]+(?=\s*?{[^{]*?\})\s*?{/g, (m) => {
+      return m.replace(/(?<=.)[:#\!\-[\\\]\/\.%]+/g, '_');
+    })
+    .replace(/font-family(?<value>[^;\r\n]+)/g, (m, value) => {
+      return `font-family${value.replace(/['"]+/g, '')}`;
+    });
+  return newCss;
+}
+
+const makeCssMap = (css: string) => {
+  const cssNoMedia = css.replace(/@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm, '');
+  const cssMap = cssNoMedia.split('}').reduce((acc, cur) => {
+    const [key, value] = cur.split('{');
+    if (key && value) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, string>);
+
+  return cssMap;
+}
+
+const getMediaQueryCss = (css: string) => {
+  const mediaQueryRegex = /@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm;
+  return (
+    css
+      .replace(mediaQueryRegex, (m) => {
+        return m.replace(/([^{]+\{)([\s\S]+?)(\}\s*\})/gm, (_, start, content, end) => {
+          const newContent = (content as string).replace(
+            /(?:[\s\r\n]*)?(?<prop>[\w-]+)\s*:\s*(?<value>[^};\r\n]+)/gm,
+            (_, prop, value) => {
+              return `${prop}: ${value} !important;`;
+            }
+          );
+          return `${start}${newContent}${end}`;
+        });
+      })
+      // only return media queries
+      .match(/@media\s*([^{]+)\{([^{}]*\{[^{}]*\})*[^{}]*\}/g)
+      ?.join('') ?? ''
+  );
 }
