@@ -3,7 +3,7 @@
 	interface $$Props extends HTMLAttributes<HTMLHeadElement> {}
 </script>
 
-<head {...$$restProps}>
+<head>
 	<meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
 	<slot />
 </head>

@@ -30,6 +30,7 @@ import { compile } from 'svelte/compiler';
  * 2. Update NPM package
 */
 
+let twClean
 
 export default async function buildEmail(rawSvelteCode: string, vite: boolean = false, tailwindConfig?: TailwindConfig) {
 
@@ -40,7 +41,6 @@ export default async function buildEmail(rawSvelteCode: string, vite: boolean = 
   } else {
     code = compile(rawSvelteCode, { generate: 'ssr' }).js.code
   }
-
 
   // If Tailwind was used, proceed to process the Tailwind classes
   const { twi } = tailwindToCSS({ config: tailwindConfig })
@@ -53,10 +53,13 @@ export default async function buildEmail(rawSvelteCode: string, vite: boolean = 
 
   // further process the tailwind css
   const cleanTwCss = cleanCss(twCss)
+  twClean = cleanTwCss
 
   // replace props and head
   const codeNewProps = substituteProps(code, cleanTwCss)
+  // const codeNewHead = codeNewProps
   const codeNewHead = substituteHead(codeNewProps, cleanTwCss)
+  // substituteHead(codeNewProps, cleanTwCss)
 
   if (vite) {
     return codeNewHead
@@ -80,107 +83,117 @@ function substituteProps(code: string, twClean: string) {
 
   while ((matchStart = regexStart.exec(code)) !== null) {
     count++
-    console.log('count:', count)
+    console.log(count)
     const startIndex = regexStart.lastIndex - 1
     const codeSliced = code.substring(startIndex)
 
     // locate the props object
-    const propsRaw = matchClosingBracket(codeSliced).replace(/\s{2,}/g, ' ').trim() // remove all excess whitespace
-    const propsCleaned = findKv(propsRaw, {})
-    console.log('propsRaw no replace:', matchClosingBracket(codeSliced))
-    console.log('Props raw:', propsRaw)
-    console.log('Created object:', propsCleaned)
-
-    // 1. Replace double quotes by single quotes (now all string values are separated out)
-    // 2. in a while-loop, find whole words followed by ": ", take the next character:
-    // either... {, (, [, ', ` -> Find match (count opening chars N, take N'th closing char) -> find next comma (,) or props closing bracket
-    // or... letter, number -> find next comma (,) or props closing bracket
-    // 3. Now have keys and values separated, excluding any nested values.
-    // 4. Double quote the keys and values. 
-
-    // const propsCleaned = propsRaw
-    //   .replace(/\s{2,}/g, ' ').trim() // remove all excess whitespace
-    //   .replace(/'/g, '"') // replace single with double quotes (only found in values)
-    //   // TODO: This shouldn't include inline kv values such as `{ key: "value" }` becoming `{ "key": "value" }`...
-    //   .replace(/(\b\w+\b)(: ")/g, '"$1"$2') // { class: "text-lg" } -> { "class": "text-lg" }
-    //   .replace(/style:/g, '"style":') // style: fontFamily -> "style": fontFamily
-    //   .replace(/"style": \{([^}]*)\}/g, '"style": "{$1}"') // "style": {...obj1, ...obj2} -> "style": "{...obj1, ...obj2}" 
-    //   .replace(/"style": (\w+)/g, '"style": "$1"') // "style": fontFamily -> "style": "fontFamily"
-    //   // TODO: Handle style obj inline: style={{ display: 'inherit' }} -> XXX "style": "{ "display": "inherit" }"
-    //   // should obviously be "{}"
-    //   .replace(/("{[^}]*")|("[^{]*}")/g, (match) => {
-    //     // Check if the match contains a double quote
-    //     if (match.includes('"')) {
-    //       // Replace double quotes with single quotes
-    //       return match.replaceAll(/"/g, "");
-    //     }
-    //     return match;
-    //   })
-
-    // const propsInlinedTw = inlineTw(JSON.parse(propsCleaned), twClean)
-    const propsInlinedTw = inlineTw(propsCleaned, twClean)
-    console.log('TW inlined:', propsInlinedTw)
-    const propsFinal = stringifyObj(propsInlinedTw)
-    console.log('Final props:', propsFinal)
+    const propsStringRaw = matchClosingBracket(codeSliced)
+    const propsStringClean = propsStringRaw.replace(/\s{2,}/g, ' ').trim() // remove all excess whitespace
+    console.log('Props INPUT:', propsStringClean)
+    const propsObj = findKv(propsStringClean)
+    console.log('Props OUTPUT:', propsObj)
     console.log(" ")
 
     // replace old props obj for the new one
-    code = substituteText(code, startIndex, matchClosingBracket(codeSliced), propsFinal)
+    code = substituteText(code, startIndex, propsStringRaw, propsObj)
   }
   return code
 }
 
-let round = 0
+function findKv(input: string): string {
+  // const obj = {}
+  let objString = ''
+  let classString = ''
+  let styleString = ''
 
-function findKv(input: string, obj: Object) {
-  if (round === 0) {
-    input = input.replace("{ ", "")
-  }
-  round++
-  if (count === 57) console.log('Raw props input', input)
-  if (input.length <= 2) {
-    return obj
-  }
-  // remove the found kv from the beginning of the string and traverse
-  const a = input
-    .replace(/\s{2,}/g, ' ')
-    .trim()
-  // .replace("{ ", "")
-  // .replace(/"/g, "'")
-  const b = a.search(/(\b\w+\b)(: )/g)
-  const c = a.substring(b)
-  const d = c.search(/(: )/g)
-  const e = c.substring(d + 2)
-  const f = e.at(0);
+  traverse(input)
 
-  if (count === 57) console.log('og KV substring (c):', c)
-  const g = {
-    key: c.substring(0, d),
-    value: c.substring(d + 2, d + 2 + matchChar(f, e) + 1)
-  }
+  console.log('objString before tw:', "{ " + objString + " }")
 
-  const h = {
-    [c.substring(0, d)]: c.substring(d + 2, d + 2 + matchChar(f, e) + 1)
+  if (classString.length > 0) {
+    const tw = inlineTw(classString.replaceAll('"', ''), twClean)
+
+    if (tw.class) {
+      classString = '"' + classString.replaceAll('"', '') + ' ' + tw.class + '"'
+      objString = objString.length
+        ? objString + ', class: ' + classString
+        : 'class: ' + classString
+    }
+
+    if (tw.style && styleString.length > 0) {
+      styleString = styleString.replaceAll('"', '') + '; ' + tw.style
+      objString = objString + ', styleString: "' + styleString + '"'
+    } else if (tw.style && styleString.length === 0) {
+      styleString = tw.style
+      objString = objString.length > 0
+        ? objString + ', styleString: "' + styleString + '"'
+        : 'styleString: "' + styleString + '"'
+    }
   }
 
-  // Object.assign(obj, h)
-  obj[g.key] = (g.value).replaceAll('"', '')
-  // console.log("Created KV:", obj)
-  // console.log('KV value:', g.value)
+  return "{ " + objString + " }"
 
-  input = a.substring(g.key.length + 2 + g.value.length + 2)
+  function traverse(input: string) {
 
-  return findKv(input, obj)
+    if (input.length <= 2) {
+      return
+    }
+
+    // a = kv without '{ ' or ', ' 
+    const a = input.replace(/\s{2,}/g, ' ').trim()
+    //  b = starting index of `key: `
+    let b = a.search(/(\b\w+\b)(: )/g)
+    // if no whole word match...
+    if (b === -1) {
+      // ...then account for keys wrapped in double quotes 
+      // (because of dashes, such as data-attributes)
+      b = a.search(/"([^"\\]+(?:\\.[^"\\]*)*)"(: )/g)
+    }
+    // c = string starting at key
+    const c = a.substring(b)
+    // d = index of `:`
+    const d = c.search(/(: )/g)
+    // e = value
+    const e = c.substring(d + 2)
+    // f = starting index of value
+    const f = e.at(0);
+    console.log('INPUT (a):', a)
+    console.log('KEY:', c)
+
+    const kv = {
+      key: c.substring(0, d),
+      // TODO: matchChar() should check if matching char is followed by `, ` or ` }`
+      // TODO: if so, end the value at next occurrence of `, ` or ` }` instead of at matching char...
+      value: c.substring(d + 2, d + 2 + matchChar(f, e) + 1).replaceAll(`'`, `"`)
+    }
+
+    if (kv.key === 'class') {
+      console.log('Found class:', kv.value)
+      classString = kv.value
+    } else if (kv.key === 'styleString') {
+      console.log('Found style:', kv.value)
+      styleString = kv.value
+    } else {
+      objString = objString + `${objString.length > 0 ? ', ' : ''}` + kv.key + ': ' + kv.value
+    }
+
+    // remove the found kv from the beginning of the string and traverse
+    // The "+ 2" comes from ": " and ", "
+    input = a.substring(kv.key.length + 2 + kv.value.length + 2)
+
+    traverse(input)
+  }
 }
 
-
-function matchChar(char, input) {
+function matchChar(char: string, input: string) {
+  // @ts-ignore
   if ((/^[a-zA-Z]+$/).test(char) || !isNaN(char)) {
     // KV ends either with a comma if more KVs, or just the object's closing bracket.
     return input.search(",") > 0 ? input.search(",") - 1 : input.search(" }") - 1
   }
   // } else /*if (char === `{` || char === `[` || char === "'" || char === "`")*/ {
-  const charMatch = {
+  const charMatch: { char: string | null, regexp: RegExp | null } = {
     char: null,
     regexp: null
   }
@@ -214,7 +227,7 @@ function matchChar(char, input) {
 
   // console.log('closing character:', charMatch.char)
 
-  let match = ''
+  let match: number
 
   const closingBrackets = Array.from(closingBracketMatches, (m) => {
     return {
@@ -245,10 +258,8 @@ function matchChar(char, input) {
     }
   }
 
-  // }
   // console.log('Closing char. index:', match)
   return match
-
 }
 
 function matchClosingBracket(queryString: string) {
@@ -296,54 +307,44 @@ function matchClosingBracket(queryString: string) {
   return match
 }
 
-function stringifyObj(obj: { [key: string]: string }): string {
-  if (obj.style) {
-    // The style value is an obj and should not have double quotes around it 
-    const jsonObj = JSON.stringify((obj))
-    const indexOfStyle = jsonObj.indexOf('"style":') + '"style":'.length
-    const substringAfterStyle = jsonObj.substring(indexOfStyle)
-    const modifiedSubstring = substringAfterStyle.replace(/"/, '').replace(/"/, '')
+function inlineTw(classString: string, twClean: string) {
+  // 3. transform tw classes to styles
+  const cssMap = makeCssMap(twClean)
+  const cleanRegex = /[:#\!\-[\]\/\.%]+/g
+  // Replace all non-alphanumeric characters with underscores
+  const cleanTailwindClasses = classString.replace(cleanRegex, '_').replaceAll('"', '')
+  // Convert tailwind classes to css styles
+  const tailwindStyles = cleanTailwindClasses
+    .split(' ')
+    .map((className: string) => cssMap[`.${className}`])
+    .join('; ')
+  console.log('TAILWINDSTYLES:', tailwindStyles)
 
-    return `${jsonObj.substring(0, indexOfStyle) + modifiedSubstring}`
-  } else {
-    return `${JSON.stringify(obj)}`
-  }
-}
+  // Merge the pre-existing styles with the tailwind styles
 
-function inlineTw(obj: { [k: string]: string }, twClean: string) {
-  if (obj.class) {
-    // 3. transform tw classes to styles
-    const cssMap = makeCssMap(twClean)
-    const cleanRegex = /[:#\!\-[\]\/\.%]+/g
+  // Keep only the responsive classes (styled later in the doc's <head>)
+  const classesArray = classString
+    .split(' ')
+    // filter '.sm:' '.lg:' etc.
+    .filter((className: string) => className.search(/^.{2}:/) !== -1)
 
-    // Replace all non-alphanumeric characters with underscores
-    const cleanTailwindClasses = obj.class.replace(cleanRegex, '_')
-    // console.log(cleanTailwindClasses)
-    // Convert tailwind classes to css styles
-    const tailwindStyles = cleanTailwindClasses
-      .split(' ')
-      .map((className: string) => cssMap[`.${className}`])
-      .join('; ')
+  if (classesArray.length > 0) {
+    let responsiveClasses = ''
 
-    // Merge the pre-existing styles with the tailwind styles
-    obj.styleString = `${obj.styleString ? (obj.styleString + '; ' + tailwindStyles) : tailwindStyles}`
-
-    // Keep only the responsive classes (styled later in the doc's <head>)
-    const classesArray = obj.class
-      .split(' ')
-      // filter '.sm:' '.lg:' etc.
-      .filter((className: string) => className.search(/^.{2}:/) !== -1)
-
-    if (classesArray.length > 0) {
-      for (const string of classesArray) {
-        // ...and add back the newly formatted responsive classes
-        obj.class = string.replace(cleanRegex, '_')
-      }
-    } else {
-      delete obj.class
+    for (const string of classesArray) {
+      // ...and add back the newly formatted responsive classes
+      responsiveClasses = responsiveClasses.length
+        ? responsiveClasses + ' ' + string.replace(cleanRegex, '_')
+        : string.replace(cleanRegex, '_')
     }
+    console.log('RESPONSIVE TW:', responsiveClasses)
+    return {
+      class: responsiveClasses,
+      style: tailwindStyles
+    }
+  } else {
+    return { style: tailwindStyles }
   }
-  return obj
 }
 
 const substituteText = (text: string, start: number, oldPart: string, newPart: string): string => {
@@ -365,32 +366,48 @@ function substituteHead(code: string, twClean: string) {
 
   const headStyle = `<style>${getMediaQueryCss(twClean)}</style>`
   // const hasResponsiveStyles = /@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm.test(headStyle)
-  const startString = '${validate_component(Head, "Head").$$render($$result, {}, {}, {' // change this to find the third {
-  const startIndex = code.indexOf(startString)
-  const stringAfterStart = code.substring(startIndex, code.length)
-  const endIndex = startIndex + stringAfterStart.indexOf('})}')
-  const inbetween = code.slice(startIndex + startString.length, endIndex)
+  const startStringPre = '${validate_component(Head, "Head").$$render($$result,' // change this to find the third {
+  const iS = code.indexOf(startStringPre)
 
-  if (inbetween.includes('default:')) {
+  const before1Str = code.substring(0, iS + startStringPre.length)
+  const from1Str = code.substring(before1Str.length)
+  const open1 = from1Str.indexOf('{')
+  const open1Str = from1Str.substring(open1)
+  const close1 = matchChar('{', open1Str)
+  const inbtwn1 = open1Str.substring(0, close1 + 1)
+
+  const before2Str = code.substring(0, (before1Str.length + open1) + inbtwn1.length)
+  const from2Str = code.substring(before2Str.length)
+  const open2 = from2Str.indexOf('{')
+  const open2Str = from2Str.substring(open2)
+  const close2 = matchChar('{', open2Str)
+  const inbtwn2 = open2Str.substring(0, close2 + 1)
+
+  const before3Str = code.substring(0, (before2Str.length + open2) + inbtwn2.length)
+  const from3Str = code.substring(before3Str.length)
+  const open3 = from3Str.indexOf('{')
+  const open3Str = from3Str.substring(open3)
+  const close3 = matchChar('{', open3Str)
+  const inbtwn3 = open3Str.substring(0, close3 + 1)
+
+  const inbtwn3Start = before3Str.length + open3
+  const inbtwn3End = inbtwn3Start + inbtwn3.length
+
+  if (inbtwn3.includes('default:')) {
     //3a. take the old string and concat the <style> tag.
-    const headChildStart = startIndex + startString.length + inbetween.indexOf('`') + 1
-    const headChildEnd = startIndex + startString.length + inbetween.lastIndexOf('`')
+    const headChildStart = inbtwn3Start + inbtwn3.indexOf('`') + 1
+    const headChildEnd = inbtwn3Start + inbtwn3.lastIndexOf('`')
     const headChildOld = code.substring(headChildStart, headChildEnd)
 
-    // console.log(code.substring(headChildStart, headChildEnd))
-    return `${code.substring(0, headChildStart - 1)
-      + '`' + headChildOld + headStyle + '`'
+    return `${code.substring(0, headChildStart)
+      + headChildOld + headStyle + '`'
       + code.substring(headChildEnd + 1)
       }`
   } else {
-    //3b. If no children already present, Insert: default: () => { return ``; }
-    const headChildStart = startIndex + startString.length
-    const headChildEnd = endIndex
-    const headChild = `default: () => { return '${headStyle}'; }`
-
-    return `${code.substring(0, headChildStart)
-      + headChild
-      + code.substring(headChildEnd)
+    //3b. If no children already present, Insert: default: () => { return `` }
+    return `${code.substring(0, inbtwn3Start + 1)
+      + `default: () => { return '${headStyle}' }`
+      + code.substring(inbtwn3End - 1)
       }`
   }
 }
