@@ -1,14 +1,19 @@
 # Create emails on build time - only replace prop slots for props
 
-bugs:
-- href="mailto: {props.email}" 
--> { href: "mailto: ", :  props.email }
-Problem: ': {' is identified as prop separator
+/* 
+ * PART 1 (X): write script to transform tailwind classes to inline styles inside the compiled js ssr component file.
+*/
 
-      // TODO: matchChar() should check if matching char is followed by `, ` or ` }`
-      // TODO: if so, end the value there instead of at matching char...
-      // TODO: e.g. 
-      href="mailto: {props.email}"
-      -> { href: "mailto:" + props.email }
-      "mailto:" isn't a value cus not followed by ', ' or ' }'
-      instead, value should end at next occurrence of ', ' or in this case ' }'
+/* 
+ * PART 2 (X): Create a Vite plugin that executes PART 1 in BOTH dev AND on build-time, for every .svelte email component. 
+ * - Config: In the source code, replace all import aliases ('$lib') for their original path
+ - Config: Define your TW Config
+ - Config: Define your email folder (instead of .email.svelte id)
+*/
+
+/* 
+ * PART 3 ( ): Release the package (update)
+ * 1. Export the Vite plugin
+ * 1. Write documentation 
+ * 2. Update NPM package
+*/
