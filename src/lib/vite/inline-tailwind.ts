@@ -1,9 +1,8 @@
-
 import { tailwindToCSS, type TailwindConfig } from 'tw-to-css'
 
 let classesNotFound: string[] = []
 
-export default function buildEmail(rawSvelteCode: string, filepath: string, tailwindConfig?: TailwindConfig) {
+export function inlineTailwind(rawSvelteCode: string, filepath: string, tailwindConfig?: TailwindConfig) {
   let code = rawSvelteCode
 
   // If Tailwind was used, proceed to process the Tailwind classes
@@ -35,6 +34,8 @@ export default function buildEmail(rawSvelteCode: string, filepath: string, tail
 }
 
 
+let final: number
+
 function substituteProps(code: string, twClean: string) {
   // unique identifier of all prop objects
   const regexStart = /\$\$result,\s*{/g
@@ -47,17 +48,18 @@ function substituteProps(code: string, twClean: string) {
     const codeSliced = code.substring(startIndex)
 
     // locate the props object
-    const propsStringRaw = matchClosingBracket(codeSliced)
+    const endIndex = matchBracket2(codeSliced)
+    const propsStringRaw = codeSliced.substring(0, endIndex)
     const propsStringClean = propsStringRaw.replace(/\s{2,}/g, ' ').trim() // remove all excess whitespace
 
     // skip empty props and props without a class key
     if (propsStringClean !== '{}' && propsStringClean.includes('class:')) {
       const propsObj = findKv(propsStringClean, twClean)
 
-      // console.log(count)
-      // console.log('INPUT:', propsStringClean)
-      // console.log('OUTPUT:', propsObj)
-      // console.log(" ")
+      console.log(count)
+      console.log('INPUT:', propsStringClean)
+      console.log('OUTPUT:', propsObj)
+      console.log(" ")
 
       // replace old props obj for the new one
       code = substituteText(code, startIndex, propsStringRaw, propsObj)
@@ -103,7 +105,6 @@ function findKv(input: string, twClean: string): string {
     if (input.length <= 2) {
       return
     }
-
     // a = kv without '{ ' or ', '
     const a = input.replace(/\s{2,}/g, ' ').trim()
     //  b = starting index of `key: `
@@ -123,6 +124,7 @@ function findKv(input: string, twClean: string): string {
     // f = starting index of value
     const f = e.at(0);
 
+
     const kv = {
       key: c.substring(0, d),
       value: c.substring(d + 2, d + 2 + matchChar(f, e) + 1)
@@ -132,6 +134,7 @@ function findKv(input: string, twClean: string): string {
 
     if (kv.key === 'class') {
       classString = kv.value
+      console.log(kv)
     } else if (kv.key === 'styleString') {
       styleString = kv.value
     } else {
@@ -216,6 +219,8 @@ function matchChar(char: string | undefined, input: string) {
       if (i === openCount - 1) {
         // e.g. '{ name: { first: { callMe: 'steven' } } }'
         match = bracket.end
+
+        console.log('matchChar()', bracket.end)
         // return bracket.end
       }
     })
@@ -254,9 +259,111 @@ function matchChar(char: string | undefined, input: string) {
   return match
 }
 
-function matchClosingBracket(queryString: string) {
+function matchBracket2(input: string): number {
+  const split = input.split(/([{}])/);
+
+  let totals = 0
+
+  const brackets = { open: 0, close: 0 }
+  type Split = {
+    text: string
+    length: number
+    accum: number
+    matched?: number
+  }
+  const split2: Split[] = []
+
+  split.forEach((item, i) => {
+    split2[i] = {
+      text: item,
+      length: item.length,
+      accum: 0,
+    }
+    totals = totals + item.length
+    split2[i].accum = totals
+    if (item === "{") {
+      brackets.open = brackets.open + 1
+    } else if (item === "}") {
+      brackets.close = brackets.close + 1
+    }
+  })
+
+  if (brackets.open !== brackets.close) {
+    console.warn('More opening brackets than closing brackets detected! Please do not use "{" and "}" within (stringified) prop values')
+  }
+
+  // This is the bracket we care about!
+  const firstOpen: number = split2.findIndex(item => item.text === "{")
+  // This is the bracket we're currently trying to match 
+  let currentOpen = -1
+  const unmatched: number[] = []
+  let prevUnmatched: number
+
+
+  const foundMatch = split2.some((item, i) => {
+    if (item.text === "{") {
+      if (currentOpen >= 0) {
+        // after finding a match ("}"), currentOpen = -1, meaning we restart the search
+        // otherwise, we've run into consecutive "{"
+        console.log(`[${i}] It's an open again... Prev open (${currentOpen}) is unmatched. New open is ${i}.`)
+        // so we set the currentOpen to not-matched
+        // split2[currentOpen].matched = false
+        // and push it into an array of non-matched open-brackets
+        unmatched.push(currentOpen)
+        // and the most recent not-matched is the last item in that array
+        prevUnmatched = unmatched[unmatched.length - 1]
+      }
+      // set current item as the new open bracket we're trying to match
+      currentOpen = i
+    }
+
+    if (item.text === "}") {
+      if (currentOpen === -1) {
+        console.log(`[${i}] It's a close again... Match ${i} to Prev unmatched (${prevUnmatched}).`)
+        // if we find 2 consecutive "}"...
+        // this one can be matched to the previously non-matched "{"
+        split2[prevUnmatched].matched = i
+        split2[i].matched = prevUnmatched
+        // and it can be taken off the unmatched array...
+        unmatched.pop()
+        // ...so that the most recent not-matched is updated to the new last item.
+        prevUnmatched = unmatched[unmatched.length - 1]
+      } else {
+        // else if it's the first "}" we encounter since matching a pair...
+        // ...it's matched to the current "{" that we're trying to match 
+        split2[currentOpen].matched = i
+        split2[i].matched = currentOpen
+      }
+      console.log(`[${i}] Close found at i=${i}. Match: ${currentOpen}`)
+
+      currentOpen = -1
+    }
+
+    // and finally, we've found the matching closing bracket of the first opening bracket!
+    return typeof split2[firstOpen].matched === 'number'
+  })
+
+  if (foundMatch) {
+return split2[split2[firstOpen].matched].accum
+  }
+
+  // useful log to see results
+  // split.forEach((item, i) => {
+  //   if (item.text === "{" || item.text === "}") {
+  //     console.log(i, item)
+  //     console.log(input.substring(item.accum - 1, split[split[i].matched].accum))
+  //   } else if (item.text === "}") {
+  //     // console.log(input.substring(0, item.accum))
+  //   }
+  // })
+}
+
+function matchClosingBracket(queryString: string): string {
   const openingBracketCount = queryString
     // match up to first closing bracket, e.g. '{ name: { first: { nickname: 'steveninety' }' 
+    // TODO: selecting first '}' and checking opening brackets inbetween does NOT work if multiple props that use brackets...
+    // TODO: For each closing bracket, find next opening bracket, repeat till no more opening brackets, 
+    // TODO: THEN use this method of finding opening brackets inbetween
     .substring(0, queryString.indexOf('}') + 1)
     // & count opening brackets
     .match(/\{/g)?.length
@@ -290,6 +397,7 @@ function matchClosingBracket(queryString: string) {
         // e.g. '{ name: { first: { callMe: 'steven' } } }'
         // @ts-ignore
         match = queryString.substring(0, bracket.start + 1)
+        console.log('matchClosingBracket()', match)
       }
     })
   } else if (openingBracketCount === 1) {
@@ -306,7 +414,12 @@ function inlineTw(classString: string, twClean: string) {
   // Replace all non-alphanumeric characters with underscores
   const cleanTailwindClasses = classString.replace(cleanRegex, '_').replaceAll('"', '')
 
-  const conversion = classString.split(' ').map((className: string) => {
+  type Conversion = {
+    original: string
+    cleaned: string
+  }
+
+  const conversion = classString.split(' ').map((className: string): Conversion => {
     return {
       original: className,
       cleaned: className.replace(cleanRegex, '_').replaceAll('"', '')
@@ -374,7 +487,7 @@ function substituteHead(code: string, twClean: string) {
 
   const headStyle = `<style>${getMediaQueryCss(twClean)}</style>`
   // const hasResponsiveStyles = /@media[^{]+\{(?<content>[\s\S]+?)\}\s*\}/gm.test(headStyle)
-  const startStringPre = '${validate_component(Head, "Head").$$render($$result,' // change this to find the third {
+  const startStringPre = '${validate_component(Head, "Head").$$render($$result,' 
   const iS = code.indexOf(startStringPre)
 
   const before1Str = code.substring(0, iS + startStringPre.length)
