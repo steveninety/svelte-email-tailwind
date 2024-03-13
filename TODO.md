@@ -1,19 +1,25 @@
 # Create emails on build time - only replace prop slots for props
 
 /* 
- * PART 1 (X): write script to transform tailwind classes to inline styles inside the compiled js ssr component file.
+ * PART 1 (X): Script
 */
 
 /* 
- * PART 2 (X): Create a Vite plugin that executes PART 1 in BOTH dev AND on build-time, for every .svelte email component. 
+ * PART 2 (X): Vite plugin
  * - Config: In the source code, replace all import aliases ('$lib') for their original path
- - Config: Define your TW Config
- - Config: Define your email folder (instead of .email.svelte id)
+ - (X) Config: Define your TW Config
+ - (X) Config: Define your email folder (instead of .email.svelte id??)
+*/
+
+/*
+* PART 3 (X): Preview
+* (X) Make send-email configurable with your own email provider 
+* (X) Allow for nested email folder
 */
 
 /* 
- * PART 3 ( ): Release the package (update)
- * 1. Export the Vite plugin
- * 1. Write documentation 
- * 2. Update NPM package
+ * PART 4 ( ): Documentation 
+ * (X) Export the Vite plugin
+ * ( ) Write documentation & proper function description notation (/* */)
+ * ( ) Update NPM package
 */
