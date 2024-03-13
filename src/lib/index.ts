@@ -14,11 +14,11 @@ import Text from './components/Text.svelte';
 import Row from './components/Row.svelte';
 import Custom from './components/Custom.svelte';
 
-import { renderSvelte } from './renderSvelte';
+import { renderSvelte } from './legacy/renderSvelte';
 
-import { renderTailwind } from './renderTailwind';
+import { renderTailwind } from './legacy/renderTailwind';
 
-import { styleToString } from './utils';
+import { renderAsPlainText } from './utils';
 
 export {
   Body,
@@ -38,5 +38,5 @@ export {
   Custom,
   renderSvelte,
   renderTailwind,
-  styleToString
+  renderAsPlainText
 };

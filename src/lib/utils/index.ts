@@ -1,3 +1,14 @@
+import { convert } from '@steveninety/html-to-text';
+
+export const renderAsPlainText = (markup: string) => {
+  return convert(markup, {
+    selectors: [
+      { selector: 'img', format: 'skip' },
+      { selector: '#__svelte-email-preview', format: 'skip' }
+    ]
+  });
+};
+
 export const copyTextToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);

@@ -14,12 +14,15 @@
 	export let styleString = '';
 	export let style: $$Props['style'] = {};
 
-const styleDefault = styleToString({
+	const styleDefault = styleToString({
 		...style
 	});
 
+	const doctype =
+		'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
 </script>
 
+{@html doctype}
 <html style={styleDefault + styleString} {...$$restProps} id="__svelte-email" {lang}>
 	<slot />
 </html>
