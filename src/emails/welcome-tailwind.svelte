@@ -1,5 +1,17 @@
 <script lang="ts">
-	import { Body, Button, Container, Head, Hr, Html, Img, Preview, Section, Text } from '$lib';
+	import {
+		Body,
+		Button,
+		Container,
+		Head,
+		Hr,
+		Html,
+		Img,
+		Preview,
+		Section,
+		Text,
+		Custom
+	} from '$lib';
 
 	export let name = {
 		firstName: {
@@ -10,22 +22,18 @@
 		fontFamily:
 			'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif'
 	};
+	const textBlue = {
+		color: 'blue'
+	};
+	const purchased_products = ['hello', [{ field1: 33, field2: 44 }]];
 </script>
 
 <Html lang="en" class="bg-white">
-	<Head>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-		<style>
-			@media (max-width: 767px) {
-				.md_text_white {
-					color: white;
-				}
-			}
-		</style>
+	<Head class="he">
+		<meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
 	</Head>
 	<Preview preview="Welcome to svelte-email" />
-	<Body>
+	<Body style={fontFamily}>
 		<Container class="my-0 mx-auto text-black">
 			<Section>
 				<Img
@@ -35,23 +43,23 @@
 					width="200"
 					height="50"
 				/>
-				<Text class="text-[16px] leading-[26px] text-inherit">
-					<!-- <div data-prop={`["purchased_products"]["0"]`}> -->
-					<!-- 	{#each purchased_products as value} -->
-					<!-- 		<span>{value.field1}</span> -->
-					<!-- 		{#if value.field2.length} -->
-					<!-- 			<div data-prop={`["purchased_products"]["0"]["field2"]`}> -->
-					<!-- 				{#each value.field2 as field2} -->
-					<!-- 					<span>{field2}</span> -->
-					<!-- 				{/each} -->
-					<!-- 			</div> -->
-					<!-- 		{:else} -->
-					<!-- 			<span>{value.field2}</span> -->
-					<!-- 		{/if} -->
-					<!-- 	{/each} -->
-					<!-- </div> -->
-					<!-- {purchased_products[0]} -->
-					<!-- {name.firstName.value} -->
+				<Custom as="sup" class={['class1', fontFamily]}>2.5</Custom>
+				<Text
+					style={{ ...fontFamily, color: textBlue.color }}
+					styleString="text-transform: uppercase"
+					class="text-[16px] leading-[26px] text-inherit"
+				>
+					{#each purchased_products as value}
+						{#if value.length}
+							{#each value as field}
+								<Text as="span" class="text-[16px]">{field}</Text>
+							{/each}
+						{:else}
+							<Text as="span">{value}</Text>
+						{/if}
+					{/each}
+					{purchased_products[0]}
+					{name.firstName.value}
 					welcome to svelte-email
 				</Text>
 			</Section>

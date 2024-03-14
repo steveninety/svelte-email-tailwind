@@ -8,7 +8,10 @@ const config = {
   preprocess: vitePreprocess(),
   extensions: ['.svelte', '.md'],
   kit: {
-    adapter: adapter()
+    adapter: adapter(),
+    // alias: {
+    //   $lib: "src/lib"
+    // }
   },
   // exclude: '*.js'
 };

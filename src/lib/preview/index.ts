@@ -1,6 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { Resend } from 'resend';
-import { renderAsPlainText } from "$lib"
+import { renderAsPlainText } from "../utils"
 import fs from 'fs'
 
 /**
@@ -18,7 +18,7 @@ export const emailList = ({ path = '/src/lib/emails', root }: { path?: string, r
     const calledFromPath = calledFrom()
 
     if (!calledFromPath) {
-      throw new Error('Could not determine the root of your project. Please pass in the root param manually (e.g. "/home/my-repos/my-project")')
+      throw new Error('Could not determine the root path of your project. Please pass in the root param manually (e.g. "/home/my-repos/my-project")')
     }
 
     root = calledFromPath.substring(calledFromPath.indexOf('/'), calledFromPath.indexOf('/src'))
@@ -67,8 +67,8 @@ export declare const SendEmailFunction: (
 const defaultSendEmailFunction: typeof SendEmailFunction = async ({ from, to, subject, html }, resendApiKey) => {
   // stringify api key to comment out temp
   const resend = new Resend(resendApiKey);
-
-  const resendReq = await resend.emails.send({ from, to, subject, html });
+  const email = { from, to, subject, html }
+  const resendReq = await resend.emails.send(email);
 
   if (resendReq.error) {
     return { success: false, error: resendReq.error }
@@ -87,9 +87,9 @@ export const sendEmail = ({ customSendEmailFunction, resendApiKey }: { customSen
 
       const email = {
         from: 'svelte-email-tailwind <onboarding@resend.dev>',
-        to: `${data.get('to')} `,
-        subject: `${data.get('component')} ${data.get('note') ? "| " + data.get('note') : ""} `,
-        html: `${data.get('html')} `
+        to: `${data.get('to')}`,
+        subject: `${data.get('component')} ${data.get('note') ? "| " + data.get('note') : ""}`,
+        html: `${data.get('html')}`
       }
 
       let sent: { success: boolean, error?: any } = { success: false, error: null }

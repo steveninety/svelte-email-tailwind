@@ -15,9 +15,10 @@
 		Img,
 		Hr
 	} from '$lib';
+	import Custom from '$lib/components/Custom.svelte';
 
 	export let props = {
-		email: '{ props.email }'
+		email: 'contact@stevenpolak.me'
 	};
 
 	const baseUrl = '';
@@ -31,10 +32,10 @@
 	<Head />
 	<Preview preview="Apple Receipt" />
 	<Body class="bg-white w-fit max-w-[660px] mx-auto" style={fontFamily}>
-		<Container class="my-0 mx-auto p-[20px 0 48px]">
+		<Container class="my-0 mx-auto p-[20px_0_48px]">
 			<Section>
 				<Column>
-					<Img src={`${baseUrl}/apple-logo.png`} width="42" height="42" alt="Apple Logo" />
+					<Img src="{baseUrl}/apple-logo.png" width="42" height="42" alt="Apple Logo" />
 				</Column>
 				<Column align="right" class="table-cell">
 					<Text class="text-[32px] text-[#888888] font-[300]">Receipt</Text>
@@ -42,7 +43,7 @@
 			</Section>
 			<Section>
 				<Column>
-					<Text class="text-center m-[36px 0 40px 0] text-[14px] font-[500] text-[#111111]">
+					<Text class="text-center m-[36px_0_40px_0] text-[14px] font-[500] text-[#111111]">
 						Save 3% on all your Apple purchases with Apple Card.
 						<sup class="font-300">1</sup>{' '}
 						<Link href="https://www.apple.com/apple-card">Apply and use in minutes</Link>
@@ -60,7 +61,7 @@
 								<Column class="w-full p-3 border border-solid border-white border-collapse">
 									<span class="text-[#666666] text-[10px]">APPLE ID</span>
 									<br />
-									<Link href={`mailto:${props.email}`}>{props.email}</Link>
+									<Link href="mailto:{props.email}">{props.email}</Link>
 								</Column>
 							</Row>
 							<Row class="h-[46px]">
@@ -119,7 +120,7 @@
 			<Section>
 				<Column class="sm:w-full w-auto sm:block">
 					<Img
-						src={`${baseUrl}/apple-hbo-max-icon.jpeg`}
+						src="{baseUrl}/apple-hbo-max-icon.jpeg"
 						width="64"
 						height="64"
 						alt="HBO Max"
@@ -171,21 +172,22 @@
 			<Hr class="mb-[75px]" />
 			<Section>
 				<Column align="center" class="block">
-					<Img src={`${baseUrl}/apple-card-icon.png`} width="60" height="17" alt="Apple Card" />
+					<Img src="{baseUrl}/apple-card-icon.png" width="60" height="17" alt="Apple Card" />
 					<Text class="text-[24px] font-[500]">Save 3% on all your Apple purchases.</Text>
 					<Link
 						class="text-[rgb(0,126,255)] no-underline"
 						href="https://wallet.apple.com/apple-card/setup/feature/ccs?referrer=cid%3Dapy-120-100003"
 					>
 						<Img
-							src={`${baseUrl}/apple-wallet.png`}
 							width="28"
 							height="28"
 							alt="Apple Wallet"
 							class="display-[inherit] pr-[8px] align-middle"
 							style={{ display: 'inherit' }}
 						/>
-						<span class="text-[14px] font-[400] no-underline">Apply and use in minutes</span>
+						<Custom as="span" class="text-[14px] font-[400] no-underline"
+							>Apply and use in minutes</Custom
+						>
 					</Link>
 				</Column>
 			</Section>
@@ -215,7 +217,7 @@
 				If you reside in the US territories, please call Goldman Sachs at 877-255-5923 with questions
 				about Apple Card.
 			</Text>
-			<Text class="text-[12px] text-[#666666] m-[20px 0 0 0] leading-tight text-center">
+			<Text class="text-[12px] text-[#666666] m-[20px_0_0_0] leading-tight text-center">
 				Privacy: We use a
 				<Link href="http://support.apple.com/kb/HT207233" class="text-[rgb(0,115,255)]">
 					{' '}
@@ -223,7 +225,7 @@
 				</Link>
 				to provide reports to developers.
 			</Text>
-			<Text class="text-[12px] text-[#666666] m-[20px 0 0 0] leading-tight text-center">
+			<Text class="text-[12px] text-[#666666] m-[20px_0_0_0] leading-tight text-center">
 				Get help with subscriptions and purchases.
 				<Link
 					href="https://support.apple.com/billing?cid=email_receipt"
@@ -253,11 +255,11 @@
 				</Link>
 			</Text>
 			<Img
-				class="mx-auto"
+				class="mx-auto text-center"
 				src={`${baseUrl}/apple-logo.png`}
 				width="26"
 				height="26"
-				alt="Apple Card"
+				alt="{baseUrl}/apple-logo.png"
 			/>
 			<Text class="mt-[8px] text-center text-[12px] text-[#666666]">
 				<Link href="https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/accountSummary?mt=8">

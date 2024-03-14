@@ -7,10 +7,12 @@
 
 # Introduction
 
-This package adds a Tailwind post-processor to the original [svelte-email](https://github.com/carstenlebek/svelte-email) package. Tailwind classes are converted to inline styles on built-time using a Vite plugin (in earlier versions, they were converted every time an email was sent - not very efficient). 
-
 `svelte-email-tailwind` enables you to code, preview and test-send email templates with Svelte and Tailwind classes and render them to HTML or plain text.
 
+- This package adds a Tailwind post-processor to the original [svelte-email](https://github.com/carstenlebek/svelte-email) package. 
+- Tailwind classes are converted to inline styles on built-time using a Vite plugin. 
+- In earlier versions, this process took place every time an email was sent (not very efficient).
+- This package also provides a Svelte preview component, including utility functions for the server (SvelteKit only).
 
 # Installation
 
@@ -30,6 +32,7 @@ pnpm install svelte-email-tailwind
 
 Import the svelteEmailTailwind Vite plugin, and pass it into the config's `plugins` array.
 
+`vite.config.ts`
 ```ts
 import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
@@ -143,10 +146,11 @@ This means you'll be able to preview your emails with the exact markup that even
 To get started...
 
 
-## 1. Configure a route (example: src/routes/email-previews/+page.svelte). 
+## 1. Configure a route 
 
 Import the Preview component and pass in the server data as a prop. Customize the email address.
 
+`src/routes/email-previews/+page.svelte`
 ```svelte
 <script lang="ts">
 	import Preview from 'svelte-email-tailwind/preview/preview.svelte';
@@ -156,14 +160,14 @@ Import the Preview component and pass in the server data as a prop. Customize th
 <Preview {data} email="name@example.com" />
 ```
 
-## 2. Configure the server for this route (example: src/routes/email-previews/+page.server.ts).
+## 2. Configure the server for this route
 
 Return the email component file list from SvelteKit's `load` function using the `emailList` function.
 In SvelteKit's `form actions`, pass in `createEmail` (loads files from the server), and `sendEmail` (sends test-emails).
 
+`src/routes/email-previews/+page.server.ts`
 ```ts
 import { createEmail, emailList, sendEmail } from 'svelte-email-tailwind/preview';
-import { Resend } from 'resend';
 import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 
 export async function load() {
@@ -219,7 +223,9 @@ export const actions = {
 }
 ```
 
-## 3. Start developing your emails via the route you've chosen (example: http://localhost:5173/email-previews). 
+## 3. Start developing your emails via the route you've chosen.
+
+Example: http://localhost:5173/email-previews
 
 # Components
 
@@ -243,9 +249,9 @@ A set of standard components to help you build amazing emails without having to 
 
 # HEADS UP! 
 
-- Always include the <Head /> component.
+- Always include the `<Head />` component.
 - When using arbitrary Tailwind classes that use multiple values, separate them using underscores (example: p-[0_30px_12px_5px]). 
-- In Svelte email components, stick to the designated components if you use Tailwind classes. If you need custom HTML, use the <Custom /> component and the "as" property to define the tag. This component defaults to a <div>. Tailwind classes on regular html nodes will not be processed.
+- In Svelte email components, stick to the designated components if you use Tailwind classes. If you need custom HTML, use the `<Custom />` component and the "as" property to define the tag. This component defaults to a `<div/>`. Tailwind classes on regular html nodes will not be processed.
 
 ## Author 
 

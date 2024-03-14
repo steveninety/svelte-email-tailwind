@@ -13,11 +13,6 @@ import Section from './components/Section.svelte';
 import Text from './components/Text.svelte';
 import Row from './components/Row.svelte';
 import Custom from './components/Custom.svelte';
-
-import { renderSvelte } from './legacy/renderSvelte';
-
-import { renderTailwind } from './legacy/renderTailwind';
-
 import { renderAsPlainText } from './utils';
 
 export {
@@ -36,7 +31,5 @@ export {
   Text,
   Row,
   Custom,
-  renderSvelte,
-  renderTailwind,
   renderAsPlainText
 };

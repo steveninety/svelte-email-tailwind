@@ -1,10 +1,13 @@
 <script>
-	import { Button, Hr, Html, Text } from '$lib';
+	import { Button, Hr, Html, Text, Head } from '$lib';
 
 	export let name = 'World';
 </script>
 
 <Html lang="en">
+	<Head>
+		<meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
+	</Head>
 	<Text>
 		Hello, {name}!
 	</Text>

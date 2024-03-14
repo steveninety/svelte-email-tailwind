@@ -1,71 +1,60 @@
 {
-	"name": "svelte-email-tailwind",
-	"version": "0.0.8",
-	"description": "Build emails with Svelte and Tailwind",
-	"author": {
-		"name": "Steven Polak"
-	},
-	"contributors": [
-		"Carsten Lebek"
-	],
-	"keywords": [
-		"svelte",
-		"email",
-		"tailwind",
-		"sveltekit",
-		"resend"
-	],
-	"scripts": {
-		"dev": "vite dev",
-		"build": "svelte-kit sync && svelte-package",
-		"docs:build": "svelte-kit sync && vite build",
-		"prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write ."
-	},
-	"devDependencies": {
-		"@iconify-json/ri": "^1.1.12",
-		"@sveltejs/adapter-auto": "^2.1.1",
-		"@sveltejs/kit": "^1.27.4",
-		"@sveltejs/package": "^1.0.2",
-		"@svelteness/kit-docs": "^1.1.5",
-		"@types/gtag.js": "^0.0.12",
-		"@types/html-to-text": "^9.0.4",
-		"@types/jsdom": "^21.1.5",
-		"@types/pretty": "^2.0.3",
-		"@typescript-eslint/eslint-plugin": "^5.62.0",
-		"@typescript-eslint/parser": "^5.62.0",
-		"autoprefixer": "^10.4.16",
-		"clsx": "^1.2.1",
-		"csstype": "^3.1.2",
-		"eslint": "^8.53.0",
-		"eslint-config-prettier": "^8.10.0",
-		"eslint-plugin-svelte3": "^4.0.0",
-		"i": "^0.3.7",
-		"npm": "^9.9.1",
-		"postcss": "^8.4.31",
-		"prettier": "^2.8.8",
-		"prettier-plugin-svelte": "^2.10.1",
-		"recast": "^0.23.4",
-		"resend": "^2.0.0",
-		"shiki": "^0.14.5",
-		"svelte-check": "^3.6.0",
-		"svelte-persisted-store": "^0.7.0",
-		"tailwindcss": "^3.3.5",
-		"tslib": "^2.6.2",
-		"typescript": "^4.9.5",
-		"unplugin-icons": "^0.15.3",
-		"vite": "^4.5.0"
-	},
-	"type": "module",
-	"dependencies": {
-		"@steveninety/html-to-text": "^9.0.5",
-		"acorn": "^8.11.3",
-		"linkedom": "^0.16.1",
-		"pretty": "^2.0.0",
-		"svelte": "^3.59.2",
-		"tw-to-css": "^0.0.12"
-	}
+  "name": "svelte-email-tailwind",
+  "version": "0.0.8",
+  "description": "Build emails with Svelte and Tailwind",
+  "author": {
+    "name": "Steven Polak"
+  },
+  "contributors": [
+    "Carsten Lebek"
+  ],
+  "keywords": [
+    "svelte",
+    "email",
+    "tailwind",
+    "sveltekit",
+    "resend"
+  ],
+  "scripts": {
+    "dev": "vite dev",
+    "build": "svelte-kit sync && svelte-package",
+    "docs:build": "svelte-kit sync && vite build",
+    "prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "prettier --plugin-search-dir . --check . && eslint .",
+    "format": "prettier --plugin-search-dir . --write ."
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^2.1.1",
+    "@sveltejs/kit": "^1.27.4",
+    "@sveltejs/package": "^1.0.2",
+    "@types/html-to-text": "^9.0.4",
+    "@types/pretty": "^2.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "autoprefixer": "^10.4.16",
+    "clsx": "^1.2.1",
+    "csstype": "^3.1.2",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-svelte3": "^4.0.0",
+    "postcss": "^8.4.31",
+    "prettier": "^2.8.8",
+    "prettier-plugin-svelte": "^2.10.1",
+    "resend": "^2.0.0",
+    "svelte-check": "^3.6.0",
+    "svelte-persisted-store": "^0.7.0",
+    "tslib": "^2.6.2",
+    "tw-to-css": "^0.0.12",
+    "typescript": "^4.9.5",
+    "vite": "^4.5.0",
+    "vite-plugin-inspect": "^0.8.3"
+  },
+  "type": "module",
+  "dependencies": {
+    "@steveninety/html-to-text": "^9.0.5",
+    "pretty": "^2.0.0",
+    "svelte": "^3.59.2"
+  }
 }
