@@ -8,7 +8,12 @@ import fs from 'fs'
  * Create a list containing all Svelte email component file names.
  * Return this list to the client.
  */
-export const emailList = (path = '/src/lib/emails', root?: string) => {
+export type PreviewData = {
+  files: string[] | null,
+  path: string | null
+}
+
+export const emailList = ({ path = '/src/lib/emails', root }: { path?: string, root?: string }): PreviewData => {
   if (!root) {
     const calledFromPath = calledFrom()
 
@@ -19,13 +24,13 @@ export const emailList = (path = '/src/lib/emails', root?: string) => {
     root = calledFromPath.substring(calledFromPath.indexOf('/'), calledFromPath.indexOf('/src'))
   }
 
-  const list = createEmailComponentList(path, getFiles(root + path))
+  const files = createEmailComponentList(path, getFiles(root + path))
 
-  if (!list.length) {
-    return { emailComponentList: null }
+  if (!files.length) {
+    return { files: null, path: null }
   }
 
-  return { emailComponentList: list, emailComponentPath: path }
+  return { files, path }
 }
 
 /**
@@ -36,8 +41,8 @@ export const emailList = (path = '/src/lib/emails', root?: string) => {
 export const createEmail = {
   'create-email': async (event: RequestEvent) => {
     const data = await event.request.formData()
-    const file = data.get('email-component')
-    const path = data.get('email-component-path')
+    const file = data.get('file')
+    const path = data.get('path')
 
     const getEmailComponent = async () => {
       try {
@@ -49,57 +54,63 @@ export const createEmail = {
 
     const emailComponent = await getEmailComponent()
     const { html } = emailComponent.render()
-    const plainText = renderAsPlainText(html)
+    const text = renderAsPlainText(html)
 
-    return { htmlRenderedTailwind: html, plainText }
+    return { html, text }
   }
 }
 
 export declare const SendEmailFunction: (
-  { from, to, subject, html }: { from: string, to: string, subject: string, html: string }
+  { from, to, subject, html }: { from: string, to: string, subject: string, html: string }, resendApiKey?: string
 ) => Promise<{ success: boolean, error?: any }>;
 
-const send: typeof SendEmailFunction = async ({ from, to, subject, html }) => {
+const defaultSendEmailFunction: typeof SendEmailFunction = async ({ from, to, subject, html }, resendApiKey) => {
   // stringify api key to comment out temp
-  const resend = new Resend('PRIVATE_RESEND_API_KEY');
+  const resend = new Resend(resendApiKey);
 
   const resendReq = await resend.emails.send({ from, to, subject, html });
 
   if (resendReq.error) {
     return { success: false, error: resendReq.error }
   } else {
-    return { success: true }
+    return { success: true, error: null }
   }
 }
 
 /**
- * 
- * Sends the email using the received form data. 
- *
- * @param { typeof SendEmailFunction } sendEmailFunction - the function used to send the email using a provider of choice.
- * @returns { success: boolean, error?: any } returns the success state and error, if any.
- * 
+ * Sends the email using the submitted form data. 
  */
-export const sendEmail = (sendEmailFunction = send) => {
+export const sendEmail = ({ customSendEmailFunction, resendApiKey }: { customSendEmailFunction?: typeof SendEmailFunction, resendApiKey?: string }) => {
   return {
-    'send-email': async (event: RequestEvent): Promise<{ success: boolean }> => {
+    'send-email': async (event: RequestEvent): Promise<{ success: boolean, error: any }> => {
       const data = await event.request.formData()
 
       const email = {
-        from: 'Svelte Email Tailwind <onboarding@resend.dev>',
+        from: 'svelte-email-tailwind <onboarding@resend.dev>',
         to: `${data.get('to')} `,
         subject: `${data.get('component')} ${data.get('note') ? "| " + data.get('note') : ""} `,
         html: `${data.get('html')} `
       }
 
-      const sent = await sendEmailFunction(email)
+      let sent: { success: boolean, error?: any } = { success: false, error: null }
 
-      if (sent.error) {
-        console.log(sent.error)
-        return { success: false }
+      if (!customSendEmailFunction && resendApiKey) {
+        sent = await defaultSendEmailFunction(email, resendApiKey)
+      } else if (customSendEmailFunction) {
+        sent = await customSendEmailFunction(email)
+      } else if (!customSendEmailFunction && !resendApiKey) {
+        const error = {
+          message: 'Please pass your Resend API key into the "sendEmail" form action, or provide a custom function.'
+        }
+        return { success: false, error }
+      }
+
+      if (sent && sent.error) {
+        console.log('Error:', sent.error)
+        return { success: false, error: sent.error }
       } else {
         console.log("Email was sent successfully.")
-        return { success: true }
+        return { success: true, error: null }
       }
     }
   }

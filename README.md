@@ -7,11 +7,14 @@
 
 # Introduction
 
-This package adds a Tailwind processor and (optionally) a Sveltekit Email Preview/Testing Interface, to the original [Svelte Email](https://github.com/carstenlebek/svelte-email) package, which is based on [react-email](https://github.com/resendlabs/react-email). `svelte-email-tailwind` enables you to code, preview and test email templates with Svelte and Tailwind classes and render them to HTML or plain text.
+This package adds a Tailwind post-processor to the original [svelte-email](https://github.com/carstenlebek/svelte-email) package. Tailwind classes are converted to inline styles on built-time using a Vite plugin (in earlier versions, they were converted every time an email was sent - not very efficient). 
+
+`svelte-email-tailwind` enables you to code, preview and test-send email templates with Svelte and Tailwind classes and render them to HTML or plain text.
+
 
 # Installation
 
-Install the package to your existing SvelteKit project:
+Install the package to your existing Svelte + Vite or SvelteKit project:
 
 ```bash title="npm"
 npm install svelte-email-tailwind
@@ -23,18 +26,75 @@ pnpm install svelte-email-tailwind
 
 # Getting started
 
-## 1. Create an email using Svelte
+## 1. Configure Vite
 
-`$lib/emails/Hello.svelte`
+Import the svelteEmailTailwind Vite plugin, and pass it into the config's `plugins` array.
 
-```html
+```ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import type { UserConfig } from 'vite';
+import svelteEmailTailwind from 'svelte-email-tailwind/vite';
+
+const config: UserConfig = {
+  plugins: [
+    sveltekit(),
+    svelteEmailTailwind() // processes .svelte files inside the default '/src/lib/emails' folder
+  ],
+};
+
+export default config;
+```
+
+Optional customizations: 
+- Provide a Tailwind config;
+- Provide a custom path to your email folder.
+
+```js
+import { sveltekit } from '@sveltejs/kit/vite';
+import type { UserConfig } from 'vite';
+import type { TailwindConfig } from 'tw-to-css';
+import svelteEmailTailwind from 'svelte-email-tailwind/vite';
+
+const emailTwConfig: TailwindConfig = {
+  theme: {
+    screens: {
+      md: { max: '767px' },
+      sm: { max: '475px' }
+    },
+    extend: {
+      colors: {
+        brand: 'rgb(255, 62, 0)'
+      }
+    }
+  }
+}
+
+const config: UserConfig = {
+  plugins: [
+    sveltekit(),
+    svelteEmailTailwind({
+      tailwindConfig: emailTwConfig,
+      pathToEmailFolder: '/src/lib/components/emails' // defaults to '/src/lib/emails'
+    })
+  ],
+};
+
+export default config;
+```
+
+## 2. Create an email using Svelte
+
+`src/lib/emails/Hello.svelte`
+
+```svelte
 <script>
-	import { Button, Hr, Html, Text } from 'svelte-email-tailwind';
+	import { Button, Hr, Html, Text, Head } from 'svelte-email-tailwind';
 
 	export let name = 'World';
 </script>
 
 <Html lang="en">
+  <Head />
 	<Text class="md:text-[18px] text-[24px]">
 		Hello, {name}!
 	</Text>
@@ -43,28 +103,28 @@ pnpm install svelte-email-tailwind
 </Html>
 ```
 
-## 2. Send email
+## 3. Render & send an email
 
-This example uses SvelteKit and [Resend](https://resend.com/docs/send-with-nodejs) to send the email. You can use any other email service provider.
+This example uses [Resend](https://resend.com/docs/send-with-nodejs) to send the email. You can use any other email service provider (Nodemailer, SendGrid, Postmark, AWS SES...).
 
 `src/routes/emails/hello/+server.ts`
 
 ```ts
 import type { ComponentProps } from 'svelte';
-import type Props from '$lib/emails/hello.svelte';
-import component from '$lib/emails/hello.svelte';
-import { renderTailwind } from 'svelte-email-tailwind';
+import type HelloProps from 'src/lib/emails/Hello.svelte';
+import Hello from 'src/lib/emails/Hello.svelte';
 import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 import { Resend } from 'resend';
 
-const componentProps: ComponentProps<Props> = {
+const componentProps: ComponentProps<HelloProps> = {
     name: "Steven"
 }
 
-const emailHtml = renderTailwind({ component, componentProps })
+const emailHtml = Hello.render(componentProps)
 
 const resend = new Resend(PRIVATE_RESEND_API_KEY);
 
+// Send the email using your provider of choice.
 resend.emails.send({
     from: 'you@example.com',
     to: 'user@gmail.com',
@@ -73,10 +133,9 @@ resend.emails.send({
 });
 ```
 
-# Previewing & Testing Emails in Development (SvelteKit only)
+# Previewing & test-sending emails in development (SvelteKit)
 
-Using a designated route, you can preview all your dynamically generated email components.
-Upon selecting an email component, the component is dynamically imported and rendered (including tailwind classes) on the server.
+Using a designated route, you can preview all your dynamically retrieved email components.
 This means you'll be able to preview your emails with the exact markup that eventually lands an inbox (unless of course, the email provider manipulates it behind the scenes).
 
 ![svelte-email-tailwind-preview-interface](https://raw.githubusercontent.com/steveninety/svelte-email-tailwind/main/static/interface.jpg)
@@ -84,28 +143,83 @@ This means you'll be able to preview your emails with the exact markup that even
 To get started...
 
 
-## 1. Copy the `email-previews` folder from the [repo](https://github.com/steveninety/svelte-email-tailwind/tree/master/src/routes)
+## 1. Configure a route (example: src/routes/email-previews/+page.svelte). 
 
-Make sure to include all 3 files:
-- +page.server.ts
-- +page.svelte
-- EmailPreviews.svelte
+Import the Preview component and pass in the server data as a prop. Customize the email address.
 
+```svelte
+<script lang="ts">
+	import Preview from 'svelte-email-tailwind/preview/preview.svelte';
+	export let data;
+</script>
 
-## 2. (Optionally) install Resend
+<Preview {data} email="name@example.com" />
+```
 
-Test emails are sent using Resend, so [install Resend](https://resend.com/docs/send-with-nodejs) and include the API key in your `.env`.
+## 2. Configure the server for this route (example: src/routes/email-previews/+page.server.ts).
 
-If desired, you can swap out Resend for another provider such as Nodemailer. 
-To do so, adjust the `'send-email'` form action (`+page.server.ts`).
+Return the email component file list from SvelteKit's `load` function using the `emailList` function.
+In SvelteKit's `form actions`, pass in `createEmail` (loads files from the server), and `sendEmail` (sends test-emails).
 
+```ts
+import { createEmail, emailList, sendEmail } from 'svelte-email-tailwind/preview';
+import { Resend } from 'resend';
+import { PRIVATE_RESEND_API_KEY } from '$env/static/private'
 
-## 3. Start previewing all your emails in the `/email-previews` route
+export async function load() {
+  // return the list of email components
+  return emailList({})
+}
 
-1. Put your email components in the `/src/lib/emails` directory, or change the directory in `+page.server.ts` (in the `emailComponents` variable and `create-email` form action).
-2. Preview the styled and plain-text versions of all of your emails.
-3. Send the email to yourself to preview it in a real inbox.
+export const actions = {
+  // Pass in the two actions. Provide your Resend API key.
+  ...createEmail,
+  ...sendEmail({ resendApiKey: PRIVATE_RESEND_API_KEY })
+}
+```
 
+Optional customization: 
+- Provide a custom path to your email components;
+- Provide a custom function to send the email using a different provider. 
+
+```ts
+import { createEmail, emailList, sendEmail, SendEmailFunction } from 'svelte-email-tailwind/preview';
+import nodemailer from 'nodemailer';
+
+export async function load() {
+  // Customize the path to your email components.
+  return emailList({ path: '/src/lib/components/emails' })
+}
+
+// Make sure your custom 'send email' function follows the type of 'SendEmailFunction'.
+const sendUsingNodemailer: typeof SendEmailFunction = async ({ from, to, subject, html }) => {
+  const transporter = nodemailer.createTransport({
+	  host: 'smtp.ethereal.email',
+	  port: 587,
+	  secure: false,
+	  auth: {
+		  user: 'my_user',
+		  pass: 'my_password'
+	  }
+  });
+
+  const sent = await transporter.sendMail({ from, to, subject, html });
+
+  if (sent.error) {
+    return { success: false, error: sent.error }
+  } else {
+    return { success: true }
+  }
+}
+
+export const actions = {
+  ...createEmail,
+  // Pass in your custom 'send email' function.
+  ...sendEmail({ customSendEmailFunction: sendUsingNodemailer })
+}
+```
+
+## 3. Start developing your emails via the route you've chosen (example: http://localhost:5173/email-previews). 
 
 # Components
 
@@ -125,20 +239,13 @@ A set of standard components to help you build amazing emails without having to 
 - Column
 - Section
 - Row
+- Custom
 
-# Limitations
+# HEADS UP! 
 
-- This package does not process shorthand arbitrary Tailwind classes such as p-[0, 30px, 12px, 5px]. 
-
-# Integrations
-
-Emails built with Svelte Email Tailwind can be converted into HTML and sent using any email service provider. Here are some examples:
-
-- Nodemailer
-- Resend
-- SendGrid
-- Postmark
-- AWS
+- Always include the <Head /> component.
+- When using arbitrary Tailwind classes that use multiple values, separate them using underscores (example: p-[0_30px_12px_5px]). 
+- In Svelte email components, stick to the designated components if you use Tailwind classes. If you need custom HTML, use the <Custom /> component and the "as" property to define the tag. This component defaults to a <div>. Tailwind classes on regular html nodes will not be processed.
 
 ## Author 
 

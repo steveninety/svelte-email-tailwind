@@ -1,69 +1,59 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
 	import { persisted } from 'svelte-persisted-store';
-	import { get, writable, type Writable } from 'svelte/store';
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import type { PreviewData } from './index';
 
-	export let data: PageData;
-	export let form: ActionData;
+	// PROPS
+	export let data: PreviewData;
 	export let spacingTop: string = '1rem';
 	export let spacingBottom: string = '1rem';
-	export let email: string = 'name@example.com';
+	export let email: string;
 
+	// ELEMENT BINDINGS
 	let w: number;
 	let h: number;
 
-	let formCreateEmail: HTMLFormElement;
-	let formSendEmail: HTMLFormElement;
+	let form1: HTMLFormElement;
+	let form2: HTMLFormElement;
 
-	const selected = persisted('selected-email', null);
-
-	let selectingComponent = false;
+	// STATES
+	const fileSelected = persisted<string | null>('selected-email', null);
+	let loadingFile = false;
 	let invalidEmail = false;
 	let sending = false;
 	let success: boolean | null;
+	let message: string | null;
 
-	let shownInterface: 'styledHtml' | 'plainText' | 'code' = 'styledHtml';
-	let interfaceSrc: string | undefined;
+	// UI BINDINGS
+	let uiActive: 'html' | 'text' | 'code' = 'html';
+	let uiSource: string | null | undefined;
 
-	let showSendEmailForm = false;
-	let showComponentList = true;
+	let form2Expanded = false;
+	let form1Expanded = true;
 
 	let note: string;
 
-	let styledHtml: string | undefined;
-	const plainText: Writable<string | undefined> = writable();
-	const code: Writable<string | undefined> = writable();
-	$: if (form?.htmlRenderedTailwind) styledHtml = form.htmlRenderedTailwind;
-	$: plainText.update((oldValue) => {
-		if (oldValue?.length && form?.plainText?.length) {
-			if (oldValue !== form.plainText) {
-				return `${form.plainText.replace(/\n/g, '<br />')}`;
-			} else {
-				return oldValue;
-			}
+	let html: string | null | undefined;
+	let text: string | null | undefined;
+	let code: string | null | undefined;
+
+	/**
+	 * Display the corresponding data when a ui is selected
+	 * Default/auto-switch back to 'html'
+	 */
+	$: if (uiActive === 'html') {
+		uiSource = html;
+	} else if (uiActive === 'text') {
+		uiSource = text;
+	} else if (uiActive === 'code') {
+		if (!code) {
+			uiActive = 'html';
+			uiSource = html;
 		} else {
-			return form?.plainText?.replace(/\n/g, '<br />');
+			uiSource = code;
 		}
-	});
-	$: code.update((oldValue) => {
-		if (oldValue?.length && form?.code?.length) {
-			if (oldValue !== form.code) {
-				return form.code;
-			} else {
-				return oldValue;
-			}
-		} else {
-			return form?.code;
-		}
-	});
-	$: if (shownInterface === 'styledHtml') {
-		interfaceSrc = styledHtml;
-	} else if (shownInterface === 'plainText') {
-		interfaceSrc = get(plainText);
-	} else if (shownInterface === 'code') {
-		interfaceSrc = get(code);
 	}
 
 	const icons = {
@@ -76,12 +66,12 @@
 	};
 
 	onMount(() => {
-		if (get(selected) && !data?.emailComponentList?.find((file) => file === get(selected))) {
-			console.warn(`Svelte component '${get(selected)}' doesn't seem to exist (anymore)...`);
-			selected.update((value) => (value = null));
+		if (get(fileSelected) && !data?.files?.find((file) => file === get(fileSelected))) {
+			console.warn(`Svelte component '${get(fileSelected)}' doesn't seem to exist (anymore)...`);
+			fileSelected.update((value) => (value = null));
 		}
-		if (get(selected) && formCreateEmail) {
-			formCreateEmail.requestSubmit();
+		if (get(fileSelected) && form1) {
+			form1.requestSubmit();
 		}
 	});
 
@@ -90,186 +80,195 @@
 	}
 </script>
 
-<div id="u">
+<div id="window">
 	<div id="content">
 		<div id="navigation" style="padding-top: {spacingTop};">
 			<button
 				id="files-toggle"
-				class:show={showComponentList}
+				class:show={form1Expanded}
 				class="drop-down files-toggle"
 				on:click={() => {
-					if (showSendEmailForm && !showComponentList) showSendEmailForm = false;
-					showComponentList = !showComponentList;
+					// close the other drop-down
+					if (form2Expanded && !form1Expanded) form2Expanded = false;
+					form1Expanded = !form1Expanded;
 				}}
 			>
 				<div>
 					{@html icons.folder}
-					<div class:rotate={showComponentList} class="chevron">
+					<div class:rotate={form1Expanded} class="chevron">
 						{@html icons.chevron}
 					</div>
 				</div>
 			</button>
-			{#if showComponentList && !showSendEmailForm}
+			{#if form1Expanded && !form2Expanded}
 				<form
 					method="POST"
 					action="?/create-email"
 					use:enhance={(e) => {
-						selectingComponent = true;
-						return async ({ update }) => {
-							selectingComponent = false;
-							await update();
+						loadingFile = true;
+						return async ({ result }) => {
+							loadingFile = false;
+
+							if (result.type !== 'success') return;
+							/**
+							 * IMPORTANT! results are updated here - not in the form (ActionData) variable
+							 * So always get values through these variables, not through properties on the form variable
+							 */
+							html = typeof result.data?.html === 'string' ? result.data.html : null;
+							text =
+								typeof result.data?.text === 'string'
+									? result.data.text.replace(/\n/g, '<br />')
+									: null;
+							code = typeof result.data?.code === 'string' ? result.data.code : null;
+
+							// Highlight currently selected file name
 							for (const el of e.formElement.elements) {
 								// @ts-ignore
-								if (el.value === get(selected)) el.focus();
+								if (el.value === get(fileSelected)) {
+									// @ts-ignore
+									el.focus();
+								}
 							}
 						};
 					}}
 					id="files-form"
-					class:disabled={selectingComponent}
-					bind:this={formCreateEmail}
+					class:disabled={loadingFile}
+					bind:this={form1}
+					data-lenis-prevent
 				>
-					{#if !data || !data.emailComponentList}
+					{#if !data || !data.files}
 						<div>.svelte files not found / directory not found</div>
 					{:else}
 						<fieldset style="width: fit-content">
-							{#each data.emailComponentList as emailComponent}
+							{#each data.files as file}
 								<div class="input-wrapper">
 									<input
-										name="email-component"
+										name="file"
 										type="radio"
-										value={emailComponent}
-										id={emailComponent}
-										on:change={() => formCreateEmail.requestSubmit()}
-										bind:group={$selected}
-										checked={emailComponent === get(selected)}
+										value={file}
+										id={file}
+										on:change={() => form1.requestSubmit()}
+										bind:group={$fileSelected}
+										checked={file === get(fileSelected)}
 									/>
-									<label for={emailComponent} class:selected={emailComponent === get(selected)}>
+									<label for={file} class:selected={file === get(fileSelected)}>
 										<div class="inline mr-5 relative bottom-1" style="display: inline;">
 											{@html icons.file}
 										</div>
-										{emailComponent}
+										{file}
 									</label>
 								</div>
 							{/each}
-							<input
-								hidden
-								tabindex="-1"
-								name="email-component-path"
-								type="text"
-								bind:value={data.emailComponentPath}
-							/>
+							<input hidden tabindex="-1" name="path" type="text" bind:value={data.path} />
 						</fieldset>
 					{/if}
 				</form>
 			{/if}
-			<div id="interface-switch" class:disabled={!$selected}>
-				<div class:equal-width={!form?.code} class="input-wrapper">
+			<div id="ui-switch" class:disabled={!$fileSelected}>
+				<div class:equal-width={code} class="input-wrapper">
 					<input
 						type="radio"
-						name="shown-interface"
-						id="styledHtml"
-						disabled={!$selected}
-						bind:group={shownInterface}
+						name="shown-ui"
+						id="html"
+						disabled={!$fileSelected}
+						bind:group={uiActive}
 						on:change={(e) => {
 							// @ts-ignore
-							shownInterface = e.currentTarget.id;
+							uiActive = e.currentTarget.id;
 						}}
-						value="styledHtml"
-						checked={shownInterface === 'styledHtml'}
+						value="html"
+						checked={uiActive === 'html'}
 					/>
-					<label
-						for="styledHtml"
-						class:active={shownInterface === 'styledHtml'}
-						class:equal-width={!form?.code}>Styled</label
-					>
+					<label for="html" class:active={uiActive === 'html'} class:equal-width={code}>HTML</label>
 				</div>
-				<div class:equal-width={!form?.code} class="input-wrapper">
+				<div class:equal-width={code} class="input-wrapper">
 					<input
 						type="radio"
-						name="shown-interface"
-						id="plainText"
-						disabled={!$selected}
-						bind:group={shownInterface}
+						name="shown-ui"
+						id="text"
+						disabled={!$fileSelected}
+						bind:group={uiActive}
 						on:change={(e) => {
 							// @ts-ignore
-							shownInterface = e.currentTarget.id;
+							uiActive = e.currentTarget.id;
 						}}
-						value="plainText"
-						checked={shownInterface === 'plainText'}
+						value="text"
+						checked={uiActive === 'text'}
 					/>
-					<label
-						for="plainText"
-						class:active={shownInterface === 'plainText'}
-						class:equal-width={!form?.code}>Text</label
-					>
+					<label for="text" class:active={uiActive === 'text'} class:equal-width={code}>Text</label>
 				</div>
-				{#if form?.code}
+				{#if code}
 					<div class="input-wrapper">
 						<input
 							type="radio"
-							name="shown-interface"
+							name="shown-ui"
 							id="code"
-							disabled={!$selected}
-							bind:group={shownInterface}
+							disabled={!$fileSelected}
+							bind:group={uiActive}
 							on:change={(e) => {
 								// @ts-ignore
-								shownInterface = e.currentTarget.id;
+								uiActive = e.currentTarget.id;
 							}}
-							checked={shownInterface === 'code'}
+							checked={uiActive === 'code'}
 							value="code"
 						/>
-						<label
-							for="code"
-							class:active={shownInterface === 'code'}
-							class:equal-width={!form?.code}>Code</label
+						<label for="code" class:active={uiActive === 'code'} class:equal-width={code}
+							>Code</label
 						>
 					</div>
 				{/if}
 			</div>
 			<button
-				disabled={!$selected}
+				disabled={!$fileSelected}
 				id="send-toggle"
 				style=""
-				class:show={showSendEmailForm}
+				class:show={form2Expanded}
 				class="drop-down"
 				on:click={() => {
-					if (showComponentList && !showSendEmailForm) showComponentList = false;
-					showSendEmailForm = !showSendEmailForm;
+					if (form1Expanded && !form2Expanded) form1Expanded = false;
+					form2Expanded = !form2Expanded;
 				}}
 			>
 				<div>
 					{@html icons.mail}
-					<div class:rotate={showSendEmailForm} class="chevron">
+					<div class:rotate={form2Expanded} class="chevron">
 						{@html icons.chevron}
 					</div>
 				</div>
 			</button>
-			{#if showSendEmailForm && !showComponentList}
+			{#if form2Expanded && !form1Expanded}
 				<form
 					method="POST"
 					use:enhance={() => {
 						sending = true;
 						return async ({ result }) => {
 							sending = false;
-							/**
-							 * Do NOT call `update` here, because it overrides the old form data (ActionData).
-							 * The other form is important for state management - this form is not.
-							 */
-							// update({ reset: false, invalidateAll: false });
+							message = null;
 							await timer(5);
 							//@ts-ignore
-							if (result.data.success === true) {
-								success = true;
-								//@ts-ignore
-							} else if (result.data.success === false) {
+
+							if (result.type !== 'success') {
 								success = false;
+								message = 'Server error... try again!';
+							} else if (result.data?.success === true) {
+								success = true;
+								message = null;
+								//@ts-ignore
+							} else if (result.data?.success === false) {
+								success = false;
+								message =
+									result.data?.error && typeof result.data?.error === 'object'
+										? JSON.stringify(result.data.error)
+										: typeof result.data.error === 'string'
+										? result.data.error
+										: 'Something went wrong... consider debugging the "send" function you have provided.';
 							}
 							await timer(1500);
 							success = null;
 						};
 					}}
 					action="?/send-email"
-					bind:this={formSendEmail}
+					bind:this={form2}
 					id="send-form"
 					class=""
 					style=""
@@ -277,7 +276,13 @@
 					<div class="inputs-wrapper">
 						<div class="input-wrapper">
 							<label for="component">Component</label>
-							<input type="text" name="component" id="component" bind:value={$selected} readonly />
+							<input
+								type="text"
+								name="component"
+								id="component"
+								bind:value={$fileSelected}
+								readonly
+							/>
 						</div>
 						<div class="input-wrapper">
 							<label for="note">Note</label>
@@ -304,7 +309,7 @@
 							/>
 						</div>
 					</div>
-					<input hidden tabindex="-1" name="html" type="text" bind:value={interfaceSrc} />
+					<input hidden tabindex="-1" name="html" type="text" bind:value={uiSource} />
 					<button type="submit" disabled={sending || success}>
 						<div class="send" class:hide={sending || success === true || success === false}>
 							Send
@@ -322,34 +327,38 @@
 							</div>
 						{/if}
 					</button>
+					{#if message}
+						<div id="message">{message}</div>
+					{/if}
 				</form>
 			{/if}
 		</div>
-		<div
-			id="interface-wrapper"
-			style="padding-bottom: {spacingBottom};"
-			bind:clientWidth={w}
-			bind:clientHeight={h}
-		>
-			<div id="interface" class:focus-out={showSendEmailForm || showComponentList}>
-				{#if !$selected && !selectingComponent}
+		<div id="ui-wrapper" style="padding-bottom: {spacingBottom};">
+			<div
+				id="ui"
+				class:focus-out={form2Expanded || form1Expanded}
+				bind:clientWidth={w}
+				bind:clientHeight={h}
+			>
+				{#if !$fileSelected && !loadingFile}
 					<div id="select-an-email">Select an email</div>
-				{:else if shownInterface !== 'code'}
+				{:else if uiActive !== 'code'}
 					<div id="dimensions">
 						{w}px × {h}px
 					</div>
 				{/if}
-				{#if shownInterface === 'code'}
+				{#if uiActive === 'code'}
 					<div id="code">
-						{@html get(code)}
+						{@html code}
 					</div>
 				{:else}
 					<iframe
-						srcdoc={interfaceSrc !== '' ? interfaceSrc : 'Nothing to show...'}
-						title="styled-email-preview"
+						srcdoc={uiSource !== '' ? uiSource : 'Nothing to show...'}
+						title="html-email-preview"
 						width="100%"
 						height="100%"
 						frameborder="0"
+						class=""
 					/>
 				{/if}
 			</div>
@@ -359,62 +368,61 @@
 
 <style>
 	:root {
-		--light-100: rgb(238, 238, 238);
+		--light-100: white;
 		--light-300: #dcdcdc;
 		--light-700: #323232;
 		--dark-100: #323232;
 		--dark-300: #484848;
-		--dark-700: rgb(238, 238, 238);
+		--dark-700: white;
 	}
 	@media (prefers-color-scheme: dark) {
-		#u,
-		#u * {
+		#window,
+		#window * {
 			--100: var(--dark-100);
 			--300: var(--dark-300);
 			--700: var(--dark-700);
 		}
 	}
 	@media (prefers-color-scheme: light) {
-		#u,
-		#u * {
+		#window,
+		#window * {
 			--100: var(--light-100);
 			--300: var(--light-300);
 			--700: var(--light-700);
 		}
 	}
-	#u {
+	#window {
 		color: var(--700);
 		background-color: var(--100);
 	}
-	#u * {
+	#window * {
 		all: initial;
 		font-family: inherit;
 		color: inherit;
-		currentcolor: inherit;
 		border-color: inherit;
 	}
-	#u *:focus-visible:not(input[type='radio']),
-	#u input[type='radio']:focus-visible + label {
+	#window *:focus-visible:not(input[type='radio']),
+	#window input[type='radio']:focus-visible + label {
 		outline: 2px auto Highlight;
 		outline: 2px auto -webkit-focus-ring-color;
 	}
-	#u button {
+	#window button {
 		width: fit-content;
 		color: var(--700);
 	}
-	#u button,
-	#u label,
-	#u button * {
+	#window button,
+	#window label,
+	#window button * {
 		transition: 0.15s;
 		color: var(--700);
 	}
-	#u button,
-	#u label,
-	#u button *,
-	#u label * {
+	#window button,
+	#window label,
+	#window button *,
+	#window label * {
 		cursor: pointer;
 	}
-	#u {
+	#window {
 		position: absolute;
 		z-index: 9999;
 		inset: 0;
@@ -444,7 +452,7 @@
 			padding: 0 4rem;
 		}
 	}
-	#u button.drop-down {
+	#window button.drop-down {
 		width: fit-content;
 		display: flex;
 		align-items: center;
@@ -454,57 +462,57 @@
 		border: 2px solid var(--300);
 		border-radius: 100vw;
 	}
-	#u button.drop-down * {
+	#window button.drop-down * {
 		color: inherit;
 	}
-	#u button.drop-down:hover {
+	#window button.drop-down:hover {
 		border-color: var(--700);
 	}
-	#u button.drop-down.show {
+	#window button.drop-down.show {
 		color: var(--100);
 		background-color: var(--700);
 		border-color: var(--700);
 	}
-	#u button.drop-down.show * {
+	#window button.drop-down.show * {
 		color: var(--100);
 	}
-	#u button.drop-down > * {
+	#window button.drop-down > * {
 		display: flex;
 	}
-	#u button.drop-down .chevron.rotate {
+	#window button.drop-down .chevron.rotate {
 		transform: rotate(180deg);
 	}
-	#u button#send-toggle {
+	#window button#send-toggle {
 		margin-left: auto;
 		margin-right: 0;
 	}
-	#u *[disabled],
-	#u *[disabled] *,
-	#u *.disabled,
-	#u *.disabled *,
-	#u *[disabled] ~ label {
+	#window *[disabled],
+	#window *[disabled] *,
+	#window *.disabled,
+	#window *.disabled *,
+	#window *[disabled] ~ label {
 		opacity: 50%;
 		cursor: not-allowed;
 	}
-	#interface-switch {
+	#ui-switch {
 		display: flex;
 		width: fit-content;
 		margin: 0 auto;
 		border: 2px solid;
 		border-radius: 100vw;
 	}
-	#interface-switch .input-wrapper.equal-width {
+	#ui-switch .input-wrapper.equal-width {
 		width: 50%;
 	}
-	#interface-switch .input-wrapper {
+	#ui-switch .input-wrapper {
 		/* overflow: hidden; */
 		text-align: center;
 	}
-	#interface-switch .input-wrapper input {
+	#ui-switch .input-wrapper input {
 		/* opacity: 0; */
 		position: absolute;
 	}
-	#interface-switch .input-wrapper label {
+	#ui-switch .input-wrapper label {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -512,21 +520,21 @@
 		padding: 0rem 0.5rem;
 		text-align: center;
 	}
-	#interface-switch .input-wrapper label.equal-width {
+	#ui-switch .input-wrapper label.equal-width {
 		padding: 0rem 1rem;
 	}
-	#interface-switch .input-wrapper label.active {
+	#ui-switch .input-wrapper label.active {
 		background-color: var(--700);
 		color: var(--100);
 	}
-	#interface-switch .input-wrapper label:not(.active):hover {
+	#ui-switch .input-wrapper label:not(.active):hover {
 		background-color: var(--300);
 	}
-	#interface-switch .input-wrapper:first-child label {
+	#ui-switch .input-wrapper:first-child label {
 		border-top-left-radius: 100vw;
 		border-bottom-left-radius: 100vw;
 	}
-	#interface-switch .input-wrapper:last-child label {
+	#ui-switch .input-wrapper:last-child label {
 		border-top-right-radius: 100vw;
 		border-bottom-right-radius: 100vw;
 	}
@@ -640,7 +648,11 @@
 		top: 50%;
 		transform: translate(-50%, -50%);
 	}
-	#interface-wrapper {
+	#send-form #message {
+		word-break: break-all;
+		max-width: 200px;
+	}
+	#ui-wrapper {
 		max-width: 100%;
 		position: relative;
 		height: 100%;
@@ -658,7 +670,7 @@
 			padding-right: 4rem;
 		}
 	}
-	#interface {
+	#ui {
 		max-width: 100%;
 		position: relative;
 		width: 100%;
@@ -668,10 +680,10 @@
 		display: flex;
 		border: 2px solid var(--700);
 	}
-	#interface.focus-out {
+	#ui.focus-out {
 		border-color: var(--300);
 	}
-	#interface #select-an-email {
+	#ui #select-an-email {
 		position: absolute;
 		inset: 0;
 		width: fit-content;
@@ -681,7 +693,7 @@
 		color: var(--light-100);
 		mix-blend-mode: difference;
 	}
-	#interface #dimensions {
+	#ui #dimensions {
 		position: absolute;
 		top: 0.5rem;
 		right: 1rem;
@@ -690,11 +702,11 @@
 		color: var(--light-100);
 		mix-blend-mode: difference;
 	}
-	#interface #code {
+	#ui #code {
 		overflow: scroll;
 		background-color: transparent;
 	}
-	#interface iframe {
+	#ui iframe {
 		width: 100%;
 		height: 100%;
 		background-color: var(--light-100);

@@ -15,11 +15,13 @@
 * PART 3 (X): Preview
 * (X) Make send-email configurable with your own email provider 
 * (X) Allow for nested email folder
+* (X) Clean up the preview component (e.g. no longer use $form - see my portfolio repo for example)
 */
 
 /* 
  * PART 4 ( ): Documentation 
  * (X) Export the Vite plugin
- * ( ) Write documentation & proper function description notation (/* */)
+ * (X) Write documentation 
+ * ( ) Test in another project in development and production.
  * ( ) Update NPM package
 */
