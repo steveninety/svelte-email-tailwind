@@ -7,9 +7,10 @@
 
 	// PROPS
 	export let data: PreviewData;
+	export let email: string;
 	export let spacingTop: string = '1rem';
 	export let spacingBottom: string = '1rem';
-	export let email: string;
+	export let wrapperStyle: string = '';
 
 	// ELEMENT BINDINGS
 	let w: number;
@@ -80,7 +81,7 @@
 	}
 </script>
 
-<div id="window">
+<div id="window" style={wrapperStyle}>
 	<div id="content">
 		<div id="navigation" style="padding-top: {spacingTop};">
 			<button
@@ -569,6 +570,11 @@
 	#files-form fieldset label.selected {
 		background-color: var(--700);
 		color: var(--100);
+	}
+	#files-form input[hidden] {
+		display: none;
+		pointer-events: none;
+		opacity: 0;
 	}
 	#send-form {
 		grid-row-start: 3;
