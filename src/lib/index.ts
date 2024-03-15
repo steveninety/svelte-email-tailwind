@@ -14,6 +14,7 @@ import Text from './components/Text.svelte';
 import Row from './components/Row.svelte';
 import Custom from './components/Custom.svelte';
 import { renderAsPlainText } from './utils';
+import pretty from 'pretty'
 
 export {
   Body,
@@ -31,5 +32,6 @@ export {
   Text,
   Row,
   Custom,
-  renderAsPlainText
+  renderAsPlainText,
+  pretty
 };

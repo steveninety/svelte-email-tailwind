@@ -1,7 +1,7 @@
 #1.0.0 (2024-03-14)
 
 ## Features
-- A Vite plugin to transform Tailwind classes on build-time (commitID).
+- A Vite plugin to transform Tailwind classes on build-time.
 - Preview interface component has been added to the package (including corresponding server utility functions).
 
 ## BREAKING CHANGES
