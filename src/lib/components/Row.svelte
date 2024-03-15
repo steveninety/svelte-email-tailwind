@@ -11,17 +11,18 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 
-	const styleDefault = {
-		width: "100%",
+	const styleDefault = styleToString({
+		width: '100%',
 		...style
-	};
+	});
 </script>
 
 <table
-	style={styleToString(styleDefault)}
+	style={styleDefault + styleString}
 	align="center"
 	width="100%"
 	border={0}

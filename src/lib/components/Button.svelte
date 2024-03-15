@@ -16,7 +16,8 @@
 
 	export let href = '';
 	export let style = {};
-	export let className: string | undefined = undefined;
+	export let styleString: string = '';
+	let className: string | undefined = undefined;
 	export { className as class };
 	export let pX = 0;
 	export let pY = 0;
@@ -29,14 +30,14 @@
 		const paddingY = style?.pY || 0;
 		const paddingX = style?.pX || 0;
 
-		return {
+		return styleToString({
 			...style,
 			lineHeight: '100%',
 			textDecoration: 'none',
 			display: 'inline-block',
 			maxWidth: '100%',
 			padding: `${paddingY}px ${paddingX}px`
-		};
+		});
 	};
 
 	const buttonTextStyle = (
@@ -44,7 +45,7 @@
 	) => {
 		const paddingY = style?.pY || 0;
 
-		return {
+		return styleToString({
 			...style,
 			maxWidth: '100%',
 			display: 'inline-block',
@@ -53,16 +54,21 @@
 			textTransform: 'none' as const,
 			msoPaddingAlt: '0px',
 			msoTextRaise: pxToPt(paddingY.toString())
-		};
+		});
 	};
-
 </script>
 
-<a {...$$restProps} {href} {target} style={styleToString(buttonStyle({ ...style, pX, pY }))} class={className}>
+<a
+	{...$$restProps}
+	{href}
+	{target}
+	style={buttonStyle({ ...style, pX, pY }) + styleString}
+	class={className}
+>
 	<span>
 		{@html `<!--[if mso]><i style="letter-spacing: ${pX}px;mso-font-width:-100%;mso-text-raise:${textRaise}" hidden>&nbsp;</i><![endif]-->`}
 	</span>
-	<span style={styleToString(buttonTextStyle({ ...style, pX, pY }))}>
+	<span style={buttonTextStyle({ ...style, pX, pY }) + styleString}>
 		<slot />
 	</span>
 	<span>

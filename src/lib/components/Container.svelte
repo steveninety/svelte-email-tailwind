@@ -11,13 +11,12 @@
 	}
 
 	export let style: $$Props['style'] = {};
+	export let styleString: string = '';
 	let className: string | undefined = undefined;
 	export { className as class };
 
-	const styles = { maxWidth: '37.5em', ...style };
-	const inlineStyle = styleToString(styles);
+	const styleDefault = styleToString({ maxWidth: '37.5em', ...style });
 </script>
-
 
 <table
 	align="center"
@@ -26,8 +25,8 @@
 	cellSpacing="0"
 	cellPadding="0"
 	border={0}
-	{...$$restProps} 
-	style={inlineStyle} 
+	{...$$restProps}
+	style={styleDefault + styleString}
 	class={className}
 >
 	<tbody>

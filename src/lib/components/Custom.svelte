@@ -6,21 +6,22 @@
 	} from 'csstype';
 	import { styleToString } from '$lib/utils';
 	import type { HTMLAttributes } from 'svelte/elements';
-	interface $$Props extends Omit<HTMLAttributes<HTMLHRElement>, 'style'> {
-		style?: StandardLonghandProperties & StandardProperties & StandardShorthandProperties;
+	interface $$Props extends Omit<HTMLAttributes<HTMLParagraphElement>, 'style'> {
+		style?: StandardLonghandProperties & StandardShorthandProperties & StandardProperties;
 	}
 
 	export let style: $$Props['style'] = {};
 	export let styleString: string = '';
+	export let as = 'div';
 	let className: string | undefined = undefined;
 	export { className as class };
 
 	const styleDefault = styleToString({
-		width: '100%',
-		border: 'none',
-		borderTop: '1px solid #eaeaea',
 		...style
 	});
+	// console.log(styleDefault);
 </script>
 
-<hr style={styleDefault + styleString} {...$$restProps} class={className} />
+<svelte:element this={as} style={styleDefault + styleString} class={className} {...$$restProps}>
+	<slot />
+</svelte:element>

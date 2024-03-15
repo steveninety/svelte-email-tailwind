@@ -12,29 +12,24 @@ import Preview from './components/Preview.svelte';
 import Section from './components/Section.svelte';
 import Text from './components/Text.svelte';
 import Row from './components/Row.svelte';
-
-import { renderSvelte } from './renderSvelte';
-
-import { renderTailwind } from './renderTailwind';
-
-import { styleToString } from './utils';
+import Custom from './components/Custom.svelte';
+import { renderAsPlainText } from './utils';
 
 export {
-	Body,
-	Button,
-	Column,
-	Container,
-	Head,
-	Heading,
-	Hr,
-	Html,
-	Img,
-	Link,
-	Preview,
-	Section,
-	Text,
-	Row,
-	renderSvelte,
-	renderTailwind,
-	styleToString
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Section,
+  Text,
+  Row,
+  Custom,
+  renderAsPlainText
 };
