@@ -250,6 +250,7 @@ A set of standard components to help you build amazing emails without having to 
 # HEADS UP! 
 
 - Always include the `<Head />` component.
+- For now, class attribute/prop interpolation/variable references will not work (this won't work: class={someTwClassName}, class={`${someTwClassName} w-full`}, this will work: class="w-full").
 - When using arbitrary Tailwind classes that use multiple values, separate them using underscores (example: p-[0_30px_12px_5px]). 
 - In Svelte email components, stick to the designated components if you use Tailwind classes. If you need custom HTML, use the `<Custom />` component and the "as" property to define the tag. This component defaults to a `<div/>`. Tailwind classes on regular html nodes will not be processed.
 
