@@ -1,3 +1,15 @@
+#1.0.2 (2024-03-30)
+
+## Patch
+
+Move Resend from dev dep to normal dep
+
+#1.0.1 (2024-03-14)
+
+## Patch
+
+Move tw-to-css from dev dep to normal dep
+
 #1.0.0 (2024-03-14)
 
 ## Features
