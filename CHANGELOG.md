@@ -1,16 +1,29 @@
-#1.0.2 (2024-03-30)
+# 1.0.3 (2024-11-10)
+
+## Patch
+
+- Updated to the latest Svelte 4 version
+- Moved the svelte-persisted-store package from dev dependency to regular dependency
+
+# 1.0.2 (2024-03-30)
 
 ## Patch
 
 Move Resend from dev dep to normal dep
 
-#1.0.1 (2024-03-14)
+# 1.0.2 (2024-03-30)
+
+## Patch
+
+Move Resend from dev dep to normal dep
+
+# 1.0.1 (2024-03-14)
 
 ## Patch
 
 Move tw-to-css from dev dep to normal dep
 
-#1.0.0 (2024-03-14)
+# 1.0.0 (2024-03-14)
 
 ## Features
 - A Vite plugin to transform Tailwind classes on build-time.
