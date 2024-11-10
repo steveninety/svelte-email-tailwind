@@ -17,7 +17,7 @@
 	export let href = '';
 	export let style = {};
 	export let styleString: string = '';
-	let className: string | undefined = undefined;
+	let className: string | null | undefined = undefined;
 	export { className as class };
 	export let pX = 0;
 	export let pY = 0;

@@ -14,7 +14,7 @@
 
 	export let style: $$Props['style'] = {};
 	export let styleString: string = '';
-	let className: string | undefined = undefined;
+	let className: string | null | undefined = undefined;
 	export { className as class };
 	export let target = '_blank';
 	export let href = '';

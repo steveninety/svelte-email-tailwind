@@ -10,7 +10,7 @@
 		style?: StandardLonghandProperties & StandardShorthandProperties & StandardProperties;
 	}
 
-	export let lang = 'en';
+	export let lang: string | null = 'en';
 	export let styleString = '';
 	export let style: $$Props['style'] = {};
 
