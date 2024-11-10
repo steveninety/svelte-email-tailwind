@@ -1,3 +1,15 @@
+#1.0.4 (2024-11-10)
+
+## Patch
+
+Svelte 5 compatibility without any feature changes or breaking changes.
+
+#1.0.3 (2024-11-10)
+
+## Patch
+
+Update to the latest Svelte 4 version
+
 #1.0.2 (2024-03-30)
 
 ## Patch
