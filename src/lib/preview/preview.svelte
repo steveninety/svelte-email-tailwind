@@ -152,7 +152,7 @@
 										bind:group={$fileSelected}
 										checked={file === get(fileSelected)}
 									/>
-									<label for={file} class:selected={file === get(fileSelected)}>
+									<label for={file} class:selected={file === $fileSelected}>
 										<div class="inline mr-5 relative bottom-1" style="display: inline;">
 											{@html icons.file}
 										</div>
