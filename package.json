@@ -33,7 +33,7 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.1.1",
     "@sveltejs/kit": "^1.27.4",
-    "@sveltejs/package": "^1.0.2",
+    "@sveltejs/package": "^2.3.10",
     "@types/html-to-text": "^9.0.4",
     "@types/pretty": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -62,5 +62,36 @@
     "svelte": "^5",
     "svelte-persisted-store": "^0.12.0",
     "tw-to-css": "0.0.12"
+  },
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "default":"./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./components/Body.svelte": "./dist/components/Body.svelte",
+    "./components/Button.svelte": "./dist/components/Button.svelte",
+    "./components/Column.svelte": "./dist/components/Column.svelte",
+    "./components/Container.svelte": "./dist/components/Container.svelte",
+    "./components/Custom.svelte": "./dist/components/Custom.svelte",
+    "./components/Head.svelte": "./dist/components/Head.svelte",
+    "./components/Heading.svelte": "./dist/components/Heading.svelte",
+    "./components/Hr.svelte": "./dist/components/Hr.svelte",
+    "./components/Html.svelte": "./dist/components/Html.svelte",
+    "./components/Img.svelte": "./dist/components/Img.svelte",
+    "./components/Link.svelte": "./dist/components/Link.svelte",
+    "./components/Preview.svelte": "./dist/components/Preview.svelte",
+    "./components/Row.svelte": "./dist/components/Row.svelte",
+    "./components/Section.svelte": "./dist/components/Section.svelte",
+    "./components/Text.svelte": "./dist/components/Text.svelte",
+    "./preview": "./dist/preview/index.js",
+    "./preview/preview.svelte": "./dist/preview/preview.svelte",
+    "./utils": "./dist/utils/index.js",
+    "./vite": "./dist/vite/index.js",
+    "./vite/utils/inline-tailwind": "./dist/vite/utils/inline-tailwind.js",
+    "./vite/utils/string-utils": "./dist/vite/utils/string-utils.js",
+    "./vite/utils/tailwind-utils": "./dist/vite/utils/tailwind-utils.js"
   }
 }
