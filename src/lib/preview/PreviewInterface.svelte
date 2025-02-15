@@ -360,7 +360,7 @@
 						height="100%"
 						frameborder="0"
 						class=""
-					/>
+					></iframe>
 				{/if}
 			</div>
 		</div>
