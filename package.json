@@ -1,66 +1,98 @@
 {
-  "name": "svelte-email-tailwind",
-  "version": "2.0.1",
-  "description": "Build emails with Svelte 5 and Tailwind",
-  "author": {
-    "name": "Steven Polak"
-  },
-  "contributors": [
-    "Carsten Lebek"
-  ],
-  "keywords": [
-    "svelte",
-    "email",
-    "tailwind",
-    "sveltekit",
-    "resend"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/steveninety/svelte-email-tailwind.git",
-    "homepage": "https://github.com/steveninety/svelte-email-tailwind#readme"
-  },
-  "scripts": {
-    "dev": "vite dev",
-    "package": "svelte-kit sync && svelte-package",
-    "build": "vite build",
-    "prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "lint": "prettier --plugin-search-dir . --check . && eslint .",
-    "format": "prettier --plugin-search-dir . --write ."
-  },
-  "devDependencies": {
-    "@sveltejs/adapter-auto": "^2.1.1",
-    "@sveltejs/kit": "^1.27.4",
-    "@sveltejs/package": "^1.0.2",
-    "@types/html-to-text": "^9.0.4",
-    "@types/pretty": "^2.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "autoprefixer": "^10.4.16",
-    "clsx": "^1.2.1",
-    "csstype": "^3.1.2",
-    "eslint": "^8.53.0",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-svelte3": "^4.0.0",
-    "postcss": "^8.4.31",
-    "prettier": "^2.8.8",
-    "prettier-plugin-svelte": "^2.10.1",
-    "svelte-check": "^3.6.0",
-    "tslib": "^2.6.2",
-    "typescript": "^4.9.5",
-    "vite": "^4.5.0",
-    "vite-plugin-inspect": "^0.8.3"
-  },
-  "type": "module",
-  "dependencies": {
-    "@steveninety/html-to-text": "^9.0.5",
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
-    "pretty": "^2.0.0",
-    "resend": "2.0.0",
-    "svelte": "^5",
-    "svelte-persisted-store": "^0.12.0",
-    "tw-to-css": "0.0.12"
-  }
+	"name": "svelte-email-tailwind",
+	"version": "2.1.0",
+	"description": "Build emails with Svelte 5 and Tailwind",
+	"author": {
+		"name": "Steven Polak"
+	},
+	"contributors": [
+		"Carsten Lebek"
+	],
+	"license": "MIT",
+	"keywords": [
+		"svelte",
+		"email",
+		"tailwind",
+		"sveltekit",
+		"resend"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/steveninety/svelte-email-tailwind.git",
+		"homepage": "https://github.com/steveninety/svelte-email-tailwind#readme"
+	},
+	"scripts": {
+		"dev": "vite dev",
+		"package": "svelte-kit sync && svelte-package",
+		"build": "vite build",
+		"prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"format": "prettier --plugin-search-dir . --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^2.1.1",
+		"@sveltejs/package": "^2.3.10",
+		"@types/html-to-text": "^9.0.4",
+		"@typescript-eslint/eslint-plugin": "^5.62.0",
+		"@typescript-eslint/parser": "^5.62.0",
+		"autoprefixer": "^10.4.16",
+		"clsx": "^1.2.1",
+		"csstype": "^3.1.2",
+		"eslint": "^8.53.0",
+		"eslint-config-prettier": "^8.10.0",
+		"eslint-plugin-svelte3": "^4.0.0",
+		"postcss": "^8.4.31",
+		"prettier": "^2.8.8",
+		"prettier-plugin-svelte": "^2.10.1",
+		"svelte-check": "^3.6.0",
+		"tslib": "^2.6.2",
+		"typescript": "^4.9.5",
+		"vite": "^4.5.0",
+		"vite-plugin-inspect": "^0.8.3"
+	},
+	"type": "module",
+	"dependencies": {
+		"@sveltejs/kit": "^1.30.4",
+		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"html-to-text": "^9.0.5",
+		"resend": "2.0.0",
+		"svelte": "^5",
+		"svelte-persisted-store": "^0.12.0",
+		"tw-to-css": "0.0.12"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"svelte": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json",
+		"./components/Body.svelte": "./dist/components/Body.svelte",
+		"./components/Button.svelte": "./dist/components/Button.svelte",
+		"./components/Column.svelte": "./dist/components/Column.svelte",
+		"./components/Container.svelte": "./dist/components/Container.svelte",
+		"./components/Custom.svelte": "./dist/components/Custom.svelte",
+		"./components/Head.svelte": "./dist/components/Head.svelte",
+		"./components/Heading.svelte": "./dist/components/Heading.svelte",
+		"./components/Hr.svelte": "./dist/components/Hr.svelte",
+		"./components/Html.svelte": "./dist/components/Html.svelte",
+		"./components/Img.svelte": "./dist/components/Img.svelte",
+		"./components/Link.svelte": "./dist/components/Link.svelte",
+		"./components/Preview.svelte": "./dist/components/Preview.svelte",
+		"./components/Row.svelte": "./dist/components/Row.svelte",
+		"./components/Section.svelte": "./dist/components/Section.svelte",
+		"./components/Text.svelte": "./dist/components/Text.svelte",
+		"./preview": "./dist/preview/index.js",
+		"./preview/PreviewInterface.svelte": {
+			"types": "./dist/preview/PreviewInterface.svelte.d.ts",
+			"svelte": "./dist/preview/PreviewInterface.svelte"
+		},
+		"./utils": "./dist/utils/index.js",
+		"./vite": "./dist/vite/index.js"
+	}
 }

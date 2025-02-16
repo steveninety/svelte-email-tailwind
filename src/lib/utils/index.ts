@@ -1,4 +1,4 @@
-import { convert } from '@steveninety/html-to-text';
+import { convert } from 'html-to-text';
 
 export const renderAsPlainText = (markup: string) => {
   return convert(markup, {

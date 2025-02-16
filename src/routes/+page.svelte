@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { PreviewData } from '$lib/preview';
-	import Preview from '$lib/preview/preview.svelte';
+	import PreviewInterface from '$lib/preview/PreviewInterface.svelte';
 
 	export let data: PreviewData;
 </script>
 
-<Preview {data} email="name@example.com" />
+<PreviewInterface {data} email="name@example.com" />

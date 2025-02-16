@@ -118,6 +118,7 @@ This example uses [Resend](https://resend.com/docs/send-with-nodejs) to send the
 
 ```ts
 import { render } from 'svelte/server';
+// import { renderAsPlainText } from 'svelte-email-tailwind';
 import type { ComponentProps } from 'svelte';
 import type HelloProps from 'src/lib/emails/Hello.svelte';
 import Hello from 'src/lib/emails/Hello.svelte';
@@ -129,6 +130,8 @@ const componentProps: ComponentProps<HelloProps> = {
 };
 
 const { html } = render(Hello, { props: componentProps });
+// Alternatively, render your email as plain text:
+// const plainText = renderAsPlainText(html);
 
 const resend = new Resend(PRIVATE_RESEND_API_KEY);
 
@@ -138,6 +141,8 @@ resend.emails.send({
 	to: 'user@gmail.com',
 	subject: 'Hello',
 	html: html
+	// Or send your plain text:
+	// html: plainText
 });
 ```
 
@@ -152,17 +157,17 @@ To get started...
 
 ## 1. Configure a route
 
-Import the Preview component and pass in the server data as a prop. Customize the email address.
+Import the PreviewInterface component and pass in the server data as a prop. Customize the email address.
 
 `src/routes/email-previews/+page.svelte`
 
 ```svelte
 <script lang="ts">
-	import Preview from 'svelte-email-tailwind/preview/preview.svelte';
+	import PreviewInterface from 'svelte-email-tailwind/preview/PreviewInterface.svelte';
 	export let data;
 </script>
 
-<Preview {data} email="name@example.com" />
+<PreviewInterface {data} email="name@example.com" />
 ```
 
 ## 2. Configure the server for this route

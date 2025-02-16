@@ -14,24 +14,22 @@ import Text from './components/Text.svelte';
 import Row from './components/Row.svelte';
 import Custom from './components/Custom.svelte';
 import { renderAsPlainText } from './utils';
-import pretty from 'pretty'
 
 export {
-  Body,
-  Button,
-  Column,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Section,
-  Text,
-  Row,
-  Custom,
-  renderAsPlainText,
-  pretty
+	Body,
+	Button,
+	Column,
+	Container,
+	Head,
+	Heading,
+	Hr,
+	Html,
+	Img,
+	Link,
+	Preview,
+	Section,
+	Text,
+	Row,
+	Custom,
+	renderAsPlainText
 };
