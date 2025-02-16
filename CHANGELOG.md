@@ -1,13 +1,12 @@
-# 2.1.0 (2025-15-02)
+# 2.1.0 (2025-16-02)
 
 ## Minor Issues
 
-- Made function param of `svelteEmailTailwind` optional, since all keys of the object param are optional too.
-- Removed 'pretty' dependency because it's no longer used in the render function since moving to Svelte's native `render`.
-- Moved back to the original html-to-text dependency instead of the forked package @steveninety/html-to-text. The patch of a Vite/import-related issue, which was the original reason for forking this package, seems to no longer be an issue in a later version of Vite.
-- Documented the `renderAsPlainText` function.
-- Renamed `Preview` to `PreviewInterface` in `/preview/PreviewInterface.svelte`, to distinguish the interface component from the email component that is also called 'Preview'. Decided (1) to not put it in the main entry point to keep it separate from email components and (2) to not give this version a major version bump because the PreviewInterface is not a production component - it's just used in development. 
-- Updated the @sveltejs/package devDependency to V2 and adjusted the package.json accordingly. This should fix some type issues around imports.
+-  chore: made function param of `svelteEmailTailwind` optional, since all keys of the object param are optional too ([[#16](https://github.com/steveninety/svelte-email-tailwind/issues/16)]).
+-fix: Removed 'pretty' dependency because it's no longer used in the render function since moving to Svelte's native `render`.
+- chore: deleted the html-to-text patch - no longer an issue in later version of Vite + documented the `renderAsPlainText` function ([#19](https://github.com/steveninety/svelte-email-tailwind/issues/19))
+- fix: renamed `Preview` to `PreviewInterface` in `/preview/PreviewInterface.svelte`, to distinguish the interface component from the email component that is also called 'Preview' ([#20](https://github.com/steveninety/svelte-email-tailwind/issues/20))
+- chore: updated the @sveltejs/package devDependency to V2 and adjusted the package.json accordingly. This should also fix some type issues around imports. ([#20](https://github.com/steveninety/svelte-email-tailwind/issues/20))
 
 # 2.0.1 (2024-11-10)
 
