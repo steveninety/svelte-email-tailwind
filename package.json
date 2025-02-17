@@ -1,6 +1,6 @@
 {
 	"name": "svelte-email-tailwind",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"description": "Build emails with Svelte 5 and Tailwind",
 	"author": {
 		"name": "Steven Polak"
@@ -18,7 +18,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/steveninety/svelte-email-tailwind.git",
+		"url": "git+https://github.com/steveninety/svelte-email-tailwind.git",
 		"homepage": "https://github.com/steveninety/svelte-email-tailwind#readme"
 	},
 	"scripts": {
@@ -33,6 +33,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.1.1",
+    "@sveltejs/kit": "^1.30.4",
 		"@sveltejs/package": "^2.3.10",
 		"@types/html-to-text": "^9.0.4",
 		"@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -54,7 +55,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/kit": "^1.30.4",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"html-to-text": "^9.0.5",
 		"resend": "2.0.0",
