@@ -1,3 +1,9 @@
+# 2.1.1 (2025-17-02)
+
+## Patch
+
+- Move Sveltekit from regular dependency back to dev dependency to fix SK v1 vs v2 type mismatches ([#22](https://github.com/steveninety/svelte-email-tailwind/issues/22))
+
 # 2.1.0 (2025-16-02)
 
 ## Minor Issues
