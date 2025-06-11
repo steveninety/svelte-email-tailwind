@@ -163,13 +163,7 @@ function convertKvs(input: string, twClean: string) {
 		// a = kv without '{ ' or ', '
 		const a = input.replace(/\s{2,}/g, ' ').trim();
 		//  b = starting index of `key: `
-		const b =
-			a.search(/(\b\w+\b)(: )/g) >= 0
-				? a.search(/(\b\w+\b)(: )/g)
-				: // if no whole word match...
-				  // ...then account for keys that got wrapped in double quotes
-				  // (because of dashes, such as data-attributes)
-				  a.search(/"([^"\\]+(?:\\.[^"\\]*)*)"(: )/g);
+		const b = a.search(/(\b\w+\b|["']([^"'\\]+(?:\\.[^"'\\]*)*)["'])(: )/g);
 		// c = string starting at key
 		const c = a.substring(b);
 		// d = index of k/v separator `:`
@@ -192,8 +186,11 @@ function convertKvs(input: string, twClean: string) {
 		} else if (kv.key === 'styleString') {
 			styleString = kv.value;
 		} else {
+			console.log({ k: kv.key, v: kv.value, length: objString.length });
 			objString = objString + `${objString.length > 0 ? ', ' : ''}` + `${kv.key}: ${kv.value}`;
 		}
+
+		console.log(objString);
 
 		// remove the found kv from the beginning of the string and traverse
 		// The "+ 2" comes from ": " and ", "
