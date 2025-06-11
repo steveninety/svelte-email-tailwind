@@ -63,7 +63,7 @@ function substituteProps(
 
 		const startIndex = regexStart.lastIndex - 1;
 		const codeSliced = code.substring(startIndex);
-		const upToChildrenIndex = codeSliced.indexOf('children: (');
+		const upToChildrenIndex = codeSliced.indexOf('children: ');
 		const matchingBracketIndex = matchMultiKeyBracket(codeSliced);
 
 		// Some nodes have no children, so the matched 'children: (' will be from another node, with the result being that the prop string will be too long.
