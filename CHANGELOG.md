@@ -1,3 +1,11 @@
+# 3.0.0 (2025-11-06)
+
+## BREAKING CHANGES
+
+Svelte 5.14.3 compatibility (component SSR code syntax change)
+
+- fix: html properties with a dash (e.g. data-attr) are now properly picked up on.
+
 # 2.1.1 (2025-17-02)
 
 ## Patch
@@ -8,8 +16,8 @@
 
 ## Minor Issues
 
--  chore: made function param of `svelteEmailTailwind` optional, since all keys of the object param are optional too ([[#16](https://github.com/steveninety/svelte-email-tailwind/issues/16)]).
--fix: Removed 'pretty' dependency because it's no longer used in the render function since moving to Svelte's native `render`.
+- chore: made function param of `svelteEmailTailwind` optional, since all keys of the object param are optional too ([[#16](https://github.com/steveninety/svelte-email-tailwind/issues/16)]).
+  -fix: Removed 'pretty' dependency because it's no longer used in the render function since moving to Svelte's native `render`.
 - chore: deleted the html-to-text patch - no longer an issue in later version of Vite + documented the `renderAsPlainText` function ([#19](https://github.com/steveninety/svelte-email-tailwind/issues/19))
 - fix: renamed `Preview` to `PreviewInterface` in `/preview/PreviewInterface.svelte`, to distinguish the interface component from the email component that is also called 'Preview' ([#20](https://github.com/steveninety/svelte-email-tailwind/issues/20))
 - chore: updated the @sveltejs/package devDependency to V2 and adjusted the package.json accordingly. This should also fix some type issues around imports. ([#20](https://github.com/steveninety/svelte-email-tailwind/issues/20))

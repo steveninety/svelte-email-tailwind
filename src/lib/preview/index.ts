@@ -17,12 +17,9 @@ export type PreviewData = {
 type Props = {
 	path?: string;
 	root?: string;
-}
+};
 
-export const emailList = ({
-	path = '/src/lib/emails',
-	root
-}: Props = {}): PreviewData => {
+export const emailList = ({ path = '/src/lib/emails', root }: Props = {}): PreviewData => {
 	if (!root) {
 		const calledFromPath = calledFrom();
 
