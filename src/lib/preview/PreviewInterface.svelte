@@ -360,7 +360,7 @@
 						height="100%"
 						frameborder="0"
 						class=""
-					></iframe>
+					/>
 				{/if}
 			</div>
 		</div>
@@ -371,9 +371,11 @@
 	:root {
 		--light-100: white;
 		--light-300: #dcdcdc;
+		--light-500: #b3b3b3;
 		--light-700: #323232;
 		--dark-100: #323232;
 		--dark-300: #484848;
+		--dark-500: #666666;
 		--dark-700: white;
 	}
 	@media (prefers-color-scheme: dark) {
@@ -381,6 +383,7 @@
 		#window * {
 			--100: var(--dark-100);
 			--300: var(--dark-300);
+			--500: var(--dark-500);
 			--700: var(--dark-700);
 		}
 	}
@@ -389,6 +392,7 @@
 		#window * {
 			--100: var(--light-100);
 			--300: var(--light-300);
+			--500: var(--light-500);
 			--700: var(--light-700);
 		}
 	}
@@ -414,7 +418,7 @@
 	#window button,
 	#window label,
 	#window button * {
-		transition: 0.15s;
+		/* transition: 0.15s; */
 		color: var(--700);
 	}
 	#window button,
@@ -458,21 +462,18 @@
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-		padding: 0.1rem 0.5rem;
+		padding: 0px 12px;
 		color: var(--700);
-		border: 2px solid var(--300);
+		border: 1px solid var(--300);
 		border-radius: 100vw;
+		background-color: var(--300);
 	}
 	#window button.drop-down * {
 		color: inherit;
 	}
-	#window button.drop-down:hover {
-		border-color: var(--700);
-	}
 	#window button.drop-down.show {
 		color: var(--100);
 		background-color: var(--700);
-		border-color: var(--700);
 	}
 	#window button.drop-down.show * {
 		color: var(--100);
@@ -480,10 +481,16 @@
 	#window button.drop-down > * {
 		display: flex;
 	}
+	#window button.drop-down .chevron {
+		display: flex;
+		margin-left: 8px;
+	}
 	#window button.drop-down .chevron.rotate {
 		transform: rotate(180deg);
 	}
 	#window button#send-toggle {
+		height: 32px;
+		padding: 0px 12px;
 		margin-left: auto;
 		margin-right: 0;
 	}
@@ -499,8 +506,11 @@
 		display: flex;
 		width: fit-content;
 		margin: 0 auto;
-		border: 2px solid;
+		border: 1px solid;
+		border-color: var(--300);
 		border-radius: 100vw;
+		background-color: var(--300);
+		padding: 4px;
 	}
 	#ui-switch .input-wrapper.equal-width {
 		width: 50%;
@@ -508,6 +518,7 @@
 	#ui-switch .input-wrapper {
 		/* overflow: hidden; */
 		text-align: center;
+		border-radius: 100vw;
 	}
 	#ui-switch .input-wrapper input {
 		/* opacity: 0; */
@@ -518,7 +529,8 @@
 		align-items: center;
 		justify-content: center;
 		height: 100%;
-		padding: 0rem 0.5rem;
+		padding: 0px 8px;
+		border-radius: 100vw;
 		text-align: center;
 	}
 	#ui-switch .input-wrapper label.equal-width {
@@ -528,17 +540,14 @@
 		background-color: var(--700);
 		color: var(--100);
 	}
-	#ui-switch .input-wrapper label:not(.active):hover {
-		background-color: var(--300);
-	}
-	#ui-switch .input-wrapper:first-child label {
+	/* #ui-switch .input-wrapper:first-child label {
 		border-top-left-radius: 100vw;
 		border-bottom-left-radius: 100vw;
 	}
 	#ui-switch .input-wrapper:last-child label {
 		border-top-right-radius: 100vw;
 		border-bottom-right-radius: 100vw;
-	}
+	} */
 	#files-form {
 		grid-row-start: 2;
 		grid-row-end: 2;
@@ -551,7 +560,9 @@
 		flex-direction: column;
 		margin-top: 1rem;
 		padding: 1rem;
-		border: 2px solid var(--700);
+		/* border: 1px solid var(--700); */
+		background-color: var(--300);
+		border-radius: 8px;
 		gap: 1rem;
 	}
 	#files-form fieldset input {
@@ -562,7 +573,8 @@
 		display: flex;
 		align-items: center;
 		white-space: nowrap;
-		padding: 0.5rem 1rem;
+		padding: 0.5rem 0.5rem;
+		border-radius: 4px;
 	}
 	#files-form fieldset label:hover {
 		background-color: var(--300);
@@ -583,7 +595,8 @@
 		width: fit-content;
 		margin-left: auto;
 		padding: 1rem;
-		border: 2px solid var(--700);
+		background-color: var(--300);
+		border-radius: 8px;
 		display: flex;
 		flex-direction: column;
 		margin-top: 1rem;
@@ -610,11 +623,17 @@
 		font-size: 0.8em;
 	}
 	#send-form .input-wrapper input {
-		border: 2px solid var(--300);
+		border: 1px solid var(--500);
+		border-radius: 4px;
 		background-color: transparent;
 		padding: 0.5rem;
 	}
-	#send-form input[type='email']:invalid {
+	#send-form input::placeholder {
+		color: var(--700);
+		opacity: 0.75;
+	}
+	#send-form input[type='email']:invalid,
+	#send-form input[type='email']:disabled {
 		border-color: red;
 	}
 	#send-form input[hidden] {
@@ -629,7 +648,7 @@
 		display: flex;
 		justify-content: center;
 		padding: 0.5rem 2rem;
-		border: 2px solid var(--700);
+		border: 1px solid var(--700);
 		border-radius: 100vw;
 		color: var(--100);
 		background-color: var(--700);
@@ -638,12 +657,6 @@
 		display: flex;
 		justify-content: center;
 		color: var(--100);
-	}
-	#send-form button:hover {
-		background-color: var(--100);
-	}
-	#send-form button:hover * {
-		color: var(--700);
 	}
 	#send-form button div.hide {
 		opacity: 0;
@@ -684,7 +697,9 @@
 		max-height: 100%;
 		max-width: 100%;
 		display: flex;
-		border: 2px solid var(--700);
+		border: 1px solid var(--700);
+		border-radius: 8px;
+		overflow: hidden;
 	}
 	#ui.focus-out {
 		border-color: var(--300);
