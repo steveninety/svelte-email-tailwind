@@ -1,6 +1,6 @@
 {
 	"name": "svelte-email-tailwind",
-	"version": "3.0.1",
+	"version": "3.0.2",
 	"description": "Build emails with Svelte 5 and Tailwind",
 	"author": {
 		"name": "Steven Polak"
