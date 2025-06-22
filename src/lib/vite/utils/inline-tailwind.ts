@@ -186,11 +186,9 @@ function convertKvs(input: string, twClean: string) {
 		} else if (kv.key === 'styleString') {
 			styleString = kv.value;
 		} else {
-			console.log({ k: kv.key, v: kv.value, length: objString.length });
 			objString = objString + `${objString.length > 0 ? ', ' : ''}` + `${kv.key}: ${kv.value}`;
 		}
 
-		console.log(objString);
 
 		// remove the found kv from the beginning of the string and traverse
 		// The "+ 2" comes from ": " and ", "

@@ -19,7 +19,6 @@
 	const styleDefault = styleToString({
 		...style
 	});
-	// console.log(styleDefault);
 </script>
 
 <svelte:element this={as} style={styleDefault + styleString} class={className} {...$$restProps}>

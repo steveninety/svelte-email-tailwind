@@ -22,7 +22,6 @@
 		margin: '16px 0',
 		...style
 	});
-	// console.log(styleDefault);
 </script>
 
 <svelte:element this={as} style={styleDefault + styleString} class={className} {...$$restProps}>
