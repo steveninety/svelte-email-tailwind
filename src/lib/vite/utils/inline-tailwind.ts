@@ -222,9 +222,9 @@ function substituteHead(code: string, twClean: string) {
 	// tail = after Head content
 	const head = iS + indexStartHeadContent;
 	const tail = code.indexOf('`', head);
-	const body = code.substring(head, tail) + headStyle;
+	const body = code.substring(head, tail+1) + headStyle;
 
-	const transformedCode = `${code.substring(0, head) + body + '`' + code.substring(tail + 1)}`;
+	const transformedCode = `${code.substring(0, head) + body + code.substring(tail + 1)}`;
 
 	return transformedCode;
 }
