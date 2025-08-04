@@ -1,3 +1,9 @@
+# 4.0.0 (2025-04-08)
+
+## BREAKING CHANGES
+
+Svelte 5.36.8 compatibility (component SSR code syntax change)
+
 # 3.0.0 (2025-11-06)
 
 ## BREAKING CHANGES
