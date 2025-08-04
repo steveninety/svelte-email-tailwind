@@ -21,10 +21,10 @@ SVELTE 5 COMPATIBLE since version 2.0.0!
 Install the package to your existing Svelte + Vite or SvelteKit project:
 
 **IMPORTANT: Install the correct package version based on your Svelte version:** 
-^1.0.0 for Svelte 4
-^2.0.0 for svelte 5.0.0 - 5.14.2
-^3.0.0 for svelte 5.14.3 - 5.36.7
-^4.0.0 for svelte 5.36.8 onwards
+- ^1.0.0 for Svelte 4
+- ^2.0.0 for svelte 5.0.0 - 5.14.2
+- ^3.0.0 for svelte 5.14.3 - 5.36.7
+- ^4.0.0 for svelte 5.36.8 onwards
 
 ```bash title="npm"
 npm install svelte-email-tailwind
