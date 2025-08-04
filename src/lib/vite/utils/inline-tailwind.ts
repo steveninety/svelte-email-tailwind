@@ -212,7 +212,7 @@ function substituteHead(code: string, twClean: string) {
 	}
 
 	const stringAfterStart = code.substring(iS);
-	const stringToMatchBeforeHeadContent = '$$payload.out += `';
+	const stringToMatchBeforeHeadContent = '$$payload.out.push(`';
 	const indexStartHeadContent =
 		stringAfterStart.indexOf(stringToMatchBeforeHeadContent) +
 		stringToMatchBeforeHeadContent.length;
